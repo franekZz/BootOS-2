@@ -190,6 +190,25 @@
             margin-top: 5px;
             display: none;
         }
+
+        /* THINKING ANIMATION */
+        .thinking-dots::after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+
+        .btn-loading {
+            opacity: 0.7;
+            cursor: wait !important;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -211,7 +230,7 @@
 
         <div id="login-error" class="error-msg">Invalid email or password!</div>
 
-        <button class="hype-btn" onclick="attemptLogin()">Login</button>
+        <button id="login-btn" class="hype-btn" onclick="attemptLogin()">Login</button>
 
         <div class="secondary-links">
             <span class="link" onclick="switchView('register')">Create account</span>
@@ -238,7 +257,7 @@
 
         <div id="ximi-error" class="error-msg">Invalid Ximi credentials!</div>
 
-        <button class="hype-btn" style="background: #3498db;" onclick="attemptXimiLogin()">Login with Ximi</button>
+        <button id="ximi-btn" class="hype-btn" style="background: #3498db;" onclick="attemptXimiLogin()">Login with Ximi</button>
 
         <div class="secondary-links">
             <span class="link" onclick="switchView('login')">Back to Hype Login</span>
@@ -344,13 +363,24 @@
             const email = document.getElementById('ximi-email').value.trim();
             const pass = document.getElementById('ximi-pass').value;
             const error = document.getElementById('ximi-error');
+            const btn = document.getElementById('ximi-btn');
 
-            // Prosta weryfikacja dla symulacji
-            if (email.length > 3 && pass.length > 0) {
-                document.getElementById('restoreModal').style.display = 'flex';
-            } else {
-                error.style.display = 'block';
-            }
+            error.style.display = 'none';
+            btn.classList.add('btn-loading');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<span class="thinking-dots">Checking</span>';
+
+            setTimeout(() => {
+                btn.classList.remove('btn-loading');
+                btn.innerText = originalText;
+
+                // Prosta weryfikacja dla symulacji
+                if (email.length > 3 && pass.length > 0) {
+                    document.getElementById('restoreModal').style.display = 'flex';
+                } else {
+                    error.style.display = 'block';
+                }
+            }, 2000);
         }
 
         function restoreData(restore) {
@@ -420,15 +450,30 @@
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value;
             const error = document.getElementById('login-error');
+            const btn = document.getElementById('login-btn');
 
-            const savedEmail = localStorage.getItem('bootos_hype_email');
-            const savedPass = localStorage.getItem('bootos_hype_pass');
+            error.style.display = 'none';
+            btn.classList.add('btn-loading');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<span class="thinking-dots">Thinking</span>';
 
-            if (email === savedEmail && pass === savedPass) {
-                goToDesktop(true);
-            } else {
-                error.style.display = 'block';
-            }
+            setTimeout(() => {
+                btn.classList.remove('btn-loading');
+                btn.innerText = originalText;
+
+                const savedEmail = localStorage.getItem('bootos_hype_email');
+                const savedPass = localStorage.getItem('bootos_hype_pass');
+
+                if (!savedEmail) {
+                    error.innerText = "Account does not exist! Please create one.";
+                    error.style.display = 'block';
+                } else if (email === savedEmail && pass === savedPass) {
+                    goToDesktop(true);
+                } else {
+                    error.innerText = "Invalid email or password!";
+                    error.style.display = 'block';
+                }
+            }, 2000);
         }
 
         function attemptReset() {
