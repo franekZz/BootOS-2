@@ -231,6 +231,40 @@
             border-bottom-right-radius: 15px;
         }
 
+        /* POWER MENU */
+        #power-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 30px;
+            background: rgba(25, 25, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            width: 180px;
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            z-index: 3000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* RESTART OVERLAY */
+        #restart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 100000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
         /* WINDOWS */
         .window {
             position: fixed;
@@ -426,8 +460,19 @@
                 <div style="width: 36px; height: 36px; background: #764ba2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">👤</div>
                 <span id="username-display">Hype User</span>
             </div>
-            <div style="cursor: pointer; font-size: 20px;" onclick="location.href='index.html'">⏻</div>
+            <div style="cursor: pointer; font-size: 20px;" onclick="togglePowerMenu()">⏻</div>
+            <div id="power-menu">
+                <div class="cm-item" onclick="powerAction('logout')">🔓 Sign out</div>
+                <div class="cm-item" onclick="powerAction('restart')">🔄 Restart</div>
+                <div class="cm-item" onclick="powerAction('shutdown')">⏻ Shut down</div>
+            </div>
         </div>
+    </div>
+
+    <!-- RESTART OVERLAY -->
+    <div id="restart-overlay">
+        <div class="fix-spinner"></div>
+        <h2 id="restart-text" style="font-weight: 300;">Restarting...</h2>
     </div>
 
     <!-- WINDOWS -->
@@ -528,11 +573,11 @@
         </div>
         <div class="window-content" style="display: flex; gap: 0; padding: 0;">
             <div style="width: 180px; background: rgba(0,0,0,0.2); padding: 20px; border-right: 1px solid rgba(255,255,255,0.05);">
-                <div class="sidebar-item active" onclick="showSettingsSection('system')">System</div>
-                <div class="sidebar-item" onclick="showSettingsSection('personalization')">Personalization</div>
-                <div class="sidebar-item" onclick="showSettingsSection('account')">HypeAccount</div>
-                <div class="sidebar-item" onclick="showSettingsSection('cloud')">Hyper Cloud</div>
-                <div class="sidebar-item" onclick="showSettingsSection('updates')">Updates</div>
+                <div class="sidebar-item active" onclick="showSettingsSection(this, 'system')">System</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'personalization')">Personalization</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'account')">HypeAccount</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'cloud')">Hyper Cloud</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'updates')">Updates</div>
             </div>
             <div style="flex: 1; padding: 30px; overflow-y: auto;" id="settings-content">
                 <!-- SYSTEM SECTION -->
@@ -783,6 +828,24 @@
         // Init User Info
         const savedUser = localStorage.getItem('bootos_user') || 'Hype User';
         document.getElementById('username-display').innerText = savedUser;
+        document.getElementById('set-user-display').innerText = savedUser;
+
+        function showSettingsSection(el, id) {
+            document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#win-settings .sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById('settings-' + id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function changeWall() {
+            const url = document.getElementById('wall-input').value;
+            if(url) {
+                document.body.style.background = `url('${url}') center/cover no-repeat`;
+                localStorage.setItem('bootos_wallpaper', url);
+                alert('Wallpaper updated!');
+            }
+        }
 
         // Create Bubbles
         const container = document.getElementById('bubble-container');
@@ -808,6 +871,31 @@
         function toggleStart() {
             const menu = document.getElementById('start-menu');
             menu.classList.toggle('active');
+            if(!menu.classList.contains('active')) {
+                document.getElementById('power-menu').style.display = 'none';
+            }
+        }
+
+        function togglePowerMenu() {
+            const pm = document.getElementById('power-menu');
+            pm.style.display = pm.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function powerAction(action) {
+            const overlay = document.getElementById('restart-overlay');
+            const text = document.getElementById('restart-text');
+            overlay.style.display = 'flex';
+            
+            if(action === 'shutdown') {
+                text.innerText = 'Shutting down...';
+                setTimeout(() => window.location.href = 'index.html', 3000);
+            } else if(action === 'restart') {
+                text.innerText = 'Restarting...';
+                setTimeout(() => window.location.href = 'lockscreen_new.html', 4000);
+            } else if(action === 'logout') {
+                text.innerText = 'Signing out...';
+                setTimeout(() => window.location.href = 'lockscreen_new.html', 2000);
+            }
         }
 
         // Window Management
