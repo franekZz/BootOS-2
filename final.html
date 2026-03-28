@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Finalizacja</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        /* REALISTYCZNE BĄBELKI */
+        #bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.05));
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(1px);
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(110vh) scale(1); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            to { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+        }
+
+        /* SEKCJA 1: WIADOMOŚCI */
+        #message-screen {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .message {
+            font-size: 42px;
+            font-weight: 300;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            width: 100%;
+        }
+
+        .message.active {
+            opacity: 1;
+        }
+
+        /* SEKCJA 2: RESTART I LOGO */
+        #restart-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        .logo-text {
+            font-size: 84px;
+            font-weight: bold;
+            color: #3498db;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 1s ease-in-out;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* SEKCJA 3: EKRAN BLOKADY */
+        #lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background-size: cover;
+            display: none;
+            z-index: 200;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .lock-overlay {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            box-sizing: border-box;
+        }
+
+        #clock { font-size: 140px; font-weight: 100; margin: 0; }
+        #date { font-size: 36px; font-weight: 300; margin-top: -10px; }
+        .hint { text-align: center; font-size: 20px; animation: breathe 2s infinite ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes breathe { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="bubble-container"></div>
+
+    <!-- SEKCJA 1 -->
+    <div id="message-screen">
+        <div class="message" id="msg1">Personalizujemy Wszystko Dla ciebie</div>
+        <div class="message" id="msg2">Wszystko robimy Sami</div>
+        <div class="message" id="msg3">Pobieramy Aktualizacje</div>
+        <div class="message" id="msg4">Już chwilka</div>
+    </div>
+
+    <!-- SEKCJA 2 -->
+    <div id="restart-screen">
+        <div id="spinner-box">
+            <div class="spinner"></div>
+            <p>Uruchamianie ponownie</p>
+        </div>
+        <div id="logo-box" class="logo-text">BootOS</div>
+    </div>
+
+    <!-- SEKCJA 3 -->
+    <div id="lock-screen">
+        <div class="lock-overlay">
+            <div class="time-container">
+                <h1 id="clock">00:00</h1>
+                <p id="date">Poniedziałek, 1 stycznia</p>
+            </div>
+            <div class="hint">Naciśnij dowolny klawisz, aby odblokować</div>
+        </div>
+    </div>
+
+    <script>
+        // 1. REALISTYCZNE BĄBELKI
+        function createBubbles() {
+            const container = document.getElementById('bubble-container');
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6'];
+            
+            for (let i = 0; i < 40; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 80 + 30 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                bubble.style.left = Math.random() * 100 + 'vw';
+                
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                bubble.style.background = `radial-gradient(circle at 30% 30%, white, ${color}44)`; // 44 to przezroczystość hex
+                
+                bubble.style.animationDuration = Math.random() * 10 + 8 + 's';
+                bubble.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(bubble);
+            }
+        }
+
+        // 2. SEKWENCJA WIADOMOŚCI (4 x 5s)
+        async function startSequence() {
+            const messages = ['msg1', 'msg2', 'msg3', 'msg4'];
+            
+            for (let id of messages) {
+                const el = document.getElementById(id);
+                el.classList.add('active');
+                await new Promise(r => setTimeout(r, 5000));
+                el.classList.remove('active');
+                await new Promise(r => setTimeout(r, 1000)); // Przerwa między napisami
+            }
+
+            showRestart();
+        }
+
+        // 3. RESTART I LOGO
+        function showRestart() {
+            document.getElementById('message-screen').style.display = 'none';
+            document.getElementById('bubble-container').style.display = 'none';
+            const restart = document.getElementById('restart-screen');
+            restart.style.display = 'flex';
+
+            // Po 3s pokaż logo
+            setTimeout(() => {
+                document.getElementById('spinner-box').style.display = 'none';
+                const logo = document.getElementById('logo-box');
+                logo.style.opacity = '1';
+                logo.style.transform = 'scale(1)';
+
+                // Po 2s przejdź do ekranu blokady
+                setTimeout(showLockScreen, 2500);
+            }, 3000);
+        }
+
+        // 4. EKRAN BLOKADY
+        function showLockScreen() {
+            document.getElementById('restart-screen').style.display = 'none';
+            document.getElementById('lock-screen').style.display = 'block';
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').innerText = now.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+
+        window.onload = () => {
+            createBubbles();
+            startSequence();
+        };
+
+        window.onkeydown = () => {
+            if (document.getElementById('lock-screen').style.display === 'block') {
+                alert("Instalacja ukończona! To Twój nowy system BootOS.");
+            }
+        };
+    </script>
+</body>
+</html>
