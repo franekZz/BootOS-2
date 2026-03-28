@@ -284,12 +284,23 @@
         .store-card span { font-size: 40px; display: block; margin-bottom: 10px; }
         .store-btn { background: #764ba2; border: none; color: white; padding: 8px 15px; border-radius: 8px; margin-top: 10px; width: 100%; cursor: pointer; }
 
+        /* SETTINGS SECTION STYLES */
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+        .settings-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .settings-row:last-child { border-bottom: none; }
+        .toggle-switch { width: 40px; height: 20px; background: #333; border-radius: 10px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle-switch.on { background: #27c93f; }
+        .toggle-switch::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .toggle-switch.on::after { left: 22px; }
+
         /* EXPLORER STYLE */
         .explorer-container { display: flex; height: 100%; gap: 20px; }
         .explorer-sidebar { width: 160px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; }
-        .sidebar-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .sidebar-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s; }
         .sidebar-item:hover { background: rgba(255,255,255,0.1); }
-        .sidebar-item.active { background: rgba(118, 75, 162, 0.3); }
+        .sidebar-item.active { background: rgba(118, 75, 162, 0.3); color: white; }
         .explorer-main { flex: 1; }
         .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 20px; }
         .file-item { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
@@ -381,9 +392,11 @@
     <!-- TASKBAR -->
     <div id="taskbar">
         <div class="taskbar-left">
-            <div class="tb-icon" onclick="toggleStart()">💠</div>
+            <!-- Left empty or for other status icons -->
         </div>
         <div class="taskbar-center">
+            <div class="tb-icon start-trigger" onclick="toggleStart()" style="background: rgba(118, 75, 162, 0.5); border: 1px solid rgba(255,255,255,0.2);">💠</div>
+            <div style="width: 20px;"></div> <!-- Spacer -->
             <div class="tb-icon" onclick="openApp('explorer')">📁</div>
             <div class="tb-icon" onclick="openApp('ai')">🤖</div>
             <div class="tb-icon" onclick="openApp('store')">🛍️</div>
@@ -403,10 +416,10 @@
             <div class="start-item" onclick="openApp('ai')"><span>🤖</span><span>HypeAI</span></div>
             <div class="start-item" onclick="openApp('store')"><span>🛍️</span><span>Store</span></div>
             <div class="start-item" onclick="openApp('settings')"><span>⚙️</span><span>Settings</span></div>
-            <div class="start-item"><span>📝</span><span>Notes</span></div>
-            <div class="start-item"><span>🎨</span><span>Paint</span></div>
-            <div class="start-item"><span>🎵</span><span>Music</span></div>
-            <div class="start-item"><span>🎮</span><span>Games</span></div>
+            <div class="start-item" onclick="openApp('notes')"><span>📝</span><span>Notes</span></div>
+            <div class="start-item" onclick="openApp('paint')"><span>🎨</span><span>Paint</span></div>
+            <div class="start-item" onclick="openApp('hypemusic')"><span>🎵</span><span>Music</span></div>
+            <div class="start-item" onclick="openApp('hypegame')"><span>🎮</span><span>Games</span></div>
         </div>
         <div class="start-footer">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -515,21 +528,108 @@
         </div>
         <div class="window-content" style="display: flex; gap: 0; padding: 0;">
             <div style="width: 180px; background: rgba(0,0,0,0.2); padding: 20px; border-right: 1px solid rgba(255,255,255,0.05);">
-                <div class="sidebar-item active">System</div>
-                <div class="sidebar-item">Personalization</div>
-                <div class="sidebar-item">HypeAccount</div>
-                <div class="sidebar-item">Hyper Cloud</div>
-                <div class="sidebar-item">Updates</div>
+                <div class="sidebar-item active" onclick="showSettingsSection('system')">System</div>
+                <div class="sidebar-item" onclick="showSettingsSection('personalization')">Personalization</div>
+                <div class="sidebar-item" onclick="showSettingsSection('account')">HypeAccount</div>
+                <div class="sidebar-item" onclick="showSettingsSection('cloud')">Hyper Cloud</div>
+                <div class="sidebar-item" onclick="showSettingsSection('updates')">Updates</div>
             </div>
-            <div style="flex: 1; padding: 30px;">
-                <h2 style="margin-top: 0; font-weight: 300;">System Information</h2>
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <p><b>OS Name:</b> BootHypeOS</p>
-                    <p><b>Version:</b> 2026.1 (Hype Edition)</p>
-                    <p><b>Cloud:</b> <span style="color: #27c93f;">Connected to Hyper Cloud</span></p>
-                    <p><b>Storage:</b> 30GB (24GB Free)</p>
+            <div style="flex: 1; padding: 30px; overflow-y: auto;" id="settings-content">
+                <!-- SYSTEM SECTION -->
+                <div id="settings-system" class="settings-section active">
+                    <h2 style="margin-top: 0; font-weight: 300;">System Information</h2>
+                    <div class="settings-card">
+                        <p><b>OS Name:</b> BootHypeOS</p>
+                        <p><b>Version:</b> 2026.1 (Hype Edition)</p>
+                        <p><b>Processor:</b> HypeAI Core v2</p>
+                        <p><b>RAM:</b> 16GB Virtual</p>
+                        <p><b>Storage:</b> 30GB (24GB Free)</p>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Hardware Toggles</h3>
+                        <div class="settings-row">
+                            <span>WiFi</span>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="settings-row">
+                            <span>Bluetooth</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="settings-row">
+                            <span>Night Light</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                    </div>
                 </div>
-                <button class="store-btn" style="margin-top: 20px; width: auto; padding: 10px 25px;" onclick="location.href='index.html'">Sign Out</button>
+
+                <!-- PERSONALIZATION SECTION -->
+                <div id="settings-personalization" class="settings-section">
+                    <h2 style="margin-top: 0; font-weight: 300;">Personalization</h2>
+                    <div class="settings-card">
+                        <h3>Wallpaper</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Enter image URL to change wallpaper</p>
+                        <input type="text" id="wall-input" class="ai-input" placeholder="https://..." style="width: 100%; margin-bottom: 10px;">
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeWall()">Apply Wallpaper</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>System Theme</h3>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #764ba2; border: 2px solid white; cursor: pointer;"></div>
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #3498db; cursor: pointer;"></div>
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #27c93f; cursor: pointer;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCOUNT SECTION -->
+                <div id="settings-account" class="settings-section">
+                    <h2 style="margin-top: 0; font-weight: 300;">HypeAccount</h2>
+                    <div class="settings-card">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div style="width: 64px; height: 64px; background: #764ba2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>
+                            <div>
+                                <h3 id="set-user-display" style="margin: 0;">Hype User</h3>
+                                <p style="color: #aaa; font-size: 13px; margin: 5px 0;">Premium Member</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Privacy & Security</h3>
+                        <div class="settings-row">
+                            <span>Account Syncing</span>
+                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                        <div class="settings-row">
+                            <span>Two-Factor Auth</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                        </div>
+                    </div>
+                    <button class="store-btn" style="width: auto; padding: 10px 25px; background: #e74c3c;" onclick="location.href='index.html'">Sign Out</button>
+                </div>
+
+                <!-- CLOUD SECTION -->
+                <div id="settings-cloud" class="settings-section">
+                    <h2 style="margin-top: 0; font-weight: 300;">Hyper Cloud</h2>
+                    <div class="settings-card" style="border-color: #27c93f;">
+                        <h3 style="color: #27c93f;">Cloud Connected</h3>
+                        <p>All your files are safely backed up in the cloud.</p>
+                        <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0;">
+                            <div style="width: 15%; height: 100%; background: #27c93f; border-radius: 4px;"></div>
+                        </div>
+                        <p style="font-size: 12px; color: #aaa;">1.5 GB of 10 GB used</p>
+                    </div>
+                    <button class="store-btn" style="width: auto; padding: 8px 20px;">Sync Now</button>
+                </div>
+
+                <!-- UPDATES SECTION -->
+                <div id="settings-updates" class="settings-section">
+                    <h2 style="margin-top: 0; font-weight: 300;">Updates</h2>
+                    <div class="settings-card">
+                        <h3>Status: Up to date</h3>
+                        <p style="color: #aaa; font-size: 13px;">Last checked: Today, 12:45 PM</p>
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="this.innerText='Checking...'; setTimeout(()=>this.innerText='No updates available', 2000)">Check for updates</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -548,6 +648,109 @@
             <div class="file-grid" id="trash-grid">
                 <!-- Trash content -->
             </div>
+        </div>
+    </div>
+
+    <!-- HYPESTORE APPS -->
+    <div id="win-hypegame" class="window" style="top: 220px; left: 220px; width: 600px; height: 400px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-hypegame')">
+            <div class="window-title">🎮 HypeGame</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('hypegame')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000;">
+            <div style="font-size: 50px; margin-bottom: 20px;">🎮</div>
+            <h2 style="margin: 0;">Loading HypeGame...</h2>
+            <p style="color: #666;">High Performance Gaming Simulation</p>
+        </div>
+    </div>
+
+    <div id="win-hypemusic" class="window" style="top: 240px; left: 240px; width: 400px; height: 500px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-hypemusic')">
+            <div class="window-title">🎵 HypeMusic</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('hypemusic')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="padding: 0;">
+            <div style="height: 200px; background: linear-gradient(to bottom, #764ba2, #667eea); display: flex; align-items: center; justify-content: center; font-size: 60px;">🎵</div>
+            <div style="padding: 20px;">
+                <h3>Now Playing</h3>
+                <p style="color: #aaa;">Hype Beats - Vol 1</p>
+                <div style="width: 100%; height: 4px; background: #333; border-radius: 2px; margin: 20px 0;">
+                    <div style="width: 45%; height: 100%; background: #764ba2; border-radius: 2px;"></div>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 20px; font-size: 24px;">
+                    <span>⏮</span><span>⏯</span><span>⏭</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="win-hypeoffice" class="window" style="top: 260px; left: 260px; width: 700px; height: 500px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-hypeoffice')">
+            <div class="window-title">📊 HypeOffice</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('hypeoffice')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="padding: 0; display: flex; flex-direction: column;">
+            <div style="padding: 10px; background: #222; border-bottom: 1px solid #333; display: flex; gap: 15px; font-size: 13px;">
+                <span>File</span><span>Edit</span><span>Insert</span><span>Format</span><span>Tools</span>
+            </div>
+            <textarea style="flex: 1; background: #fff; color: #000; padding: 40px; border: none; outline: none; font-family: 'Segoe UI', sans-serif; font-size: 16px; resize: none;" placeholder="Start typing your document..."></textarea>
+        </div>
+    </div>
+
+    <div id="win-hypevast" class="window" style="top: 280px; left: 280px; width: 550px; height: 450px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-hypevast')">
+            <div class="window-title">🛡️ HypeVast</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('hypevast')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="text-align: center; padding-top: 40px;">
+            <div style="font-size: 80px; color: #27c93f; margin-bottom: 20px;">🛡️</div>
+            <h2>System Protected</h2>
+            <p style="color: #aaa;">HypeVast is actively monitoring your system.</p>
+            <button class="store-btn" style="width: auto; padding: 10px 30px; margin-top: 30px;" onclick="this.innerText='Scanning...'; setTimeout(()=>this.innerText='Scan Complete - No threats found', 3000)">Quick Scan</button>
+        </div>
+    </div>
+
+    <div id="win-notes" class="window" style="top: 300px; left: 300px; width: 400px; height: 300px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-notes')">
+            <div class="window-title">📝 HypeNotes</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('notes')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="padding: 0;">
+            <textarea style="width: 100%; height: 100%; background: transparent; color: white; border: none; padding: 15px; outline: none; resize: none; font-family: 'Segoe UI', sans-serif;" placeholder="Write a note..."></textarea>
+        </div>
+    </div>
+
+    <div id="win-paint" class="window" style="top: 320px; left: 320px; width: 600px; height: 400px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-paint')">
+            <div class="window-title">🎨 HypePaint</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('paint')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="background: white; cursor: crosshair; padding: 0;">
+             <canvas id="paint-canvas" style="width: 100%; height: 100%;"></canvas>
         </div>
     </div>
 
@@ -611,7 +814,30 @@
         function openApp(id) {
             document.getElementById('win-' + id).style.display = 'flex';
             document.getElementById('start-menu').classList.remove('active');
+            if(id === 'paint') initPaint();
         }
+
+        function initPaint() {
+            const canvas = document.getElementById('paint-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            let drawing = false;
+            
+            canvas.onmousedown = () => drawing = true;
+            canvas.onmouseup = () => { drawing = false; ctx.beginPath(); };
+            canvas.onmousemove = (e) => {
+                if(!drawing) return;
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = 'black';
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+            };
+        }
+
         function closeApp(id) {
             document.getElementById('win-' + id).style.display = 'none';
         }
@@ -619,7 +845,8 @@
         function dragWindow(e, id) {
             const win = document.getElementById(id);
             let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
-            document.onmousemove = (e) => {
+            
+            const mouseMoveHandler = (e) => {
                 pos1 = pos3 - e.clientX;
                 pos2 = pos4 - e.clientY;
                 pos3 = e.clientX;
@@ -627,10 +854,14 @@
                 win.style.top = (win.offsetTop - pos2) + "px";
                 win.style.left = (win.offsetLeft - pos1) + "px";
             };
-            document.onmouseup = () => {
-                document.onmousemove = null;
-                document.onmouseup = null;
+
+            const mouseUpHandler = () => {
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
             };
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
         }
 
         // Desktop Selection & Icon Drag
@@ -644,7 +875,7 @@
             box.style.width = '0px';
             box.style.height = '0px';
             
-            document.onmousemove = (e) => {
+            const mouseMoveHandler = (e) => {
                 const width = Math.abs(e.clientX - selectionStartX);
                 const height = Math.abs(e.clientY - selectionStartY);
                 box.style.width = width + 'px';
@@ -663,10 +894,15 @@
                     }
                 });
             };
-            document.onmouseup = () => {
+
+            const mouseUpHandler = () => {
                 box.style.display = 'none';
-                document.onmousemove = null;
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
             };
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
         }
 
         function dragIcon(e, el) {
@@ -674,7 +910,8 @@
             document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
             let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
-            document.onmousemove = (e) => {
+
+            const mouseMoveHandler = (e) => {
                 pos1 = pos3 - e.clientX;
                 pos2 = pos4 - e.clientY;
                 pos3 = e.clientX;
@@ -682,9 +919,14 @@
                 el.style.top = (el.offsetTop - pos2) + "px";
                 el.style.left = (el.offsetLeft - pos1) + "px";
             };
-            document.onmouseup = () => {
-                document.onmousemove = null;
+
+            const mouseUpHandler = () => {
+                document.removeEventListener('mousemove', mouseMoveHandler);
+                document.removeEventListener('mouseup', mouseUpHandler);
             };
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
         }
 
         function installAppInStore(btn, name, icon) {
@@ -702,7 +944,11 @@
                 iconDiv.style.left = (100 + (Math.random() * 200)) + 'px';
                 iconDiv.onmousedown = (e) => dragIcon(e, iconDiv);
                 iconDiv.innerHTML = `<div class="icon-img">${icon}</div><div class="icon-text">${name}</div>`;
-                iconDiv.ondblclick = () => alert(`Opening ${name}...`);
+                
+                // Handle opening the app
+                const appId = name.toLowerCase().replace('hype', 'hype'); // HypeGame -> hypegame
+                iconDiv.ondblclick = () => openApp(appId);
+                
                 desktop.appendChild(iconDiv);
             }, 3000);
         }
