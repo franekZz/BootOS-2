@@ -392,6 +392,77 @@
         .cm-item { padding: 10px 15px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 14px; }
         .cm-item:hover { background: rgba(255,255,255,0.1); }
         .cm-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0; }
+
+        /* INTEGRATED LOCKSCREEN */
+        #lockscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/66422359-44b1-44c2-9959-94f31766454f.png') center/cover no-repeat;
+            z-index: 200000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 60px 0;
+            box-sizing: border-box;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+
+        #lockscreen-overlay.unlocked {
+            transform: translateY(-100%);
+        }
+
+        .ls-content {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 60px 0;
+            box-sizing: border-box;
+        }
+
+        .ls-time-container { text-align: center; text-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .ls-clock { font-size: 100px; font-weight: 300; margin: 0; }
+        .ls-date { font-size: 20px; opacity: 0.9; margin-top: -10px; }
+
+        .ls-user-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .ls-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .ls-login-input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: white;
+            outline: none;
+            width: 220px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body oncontextmenu="showContextMenu(event)">
@@ -462,6 +533,7 @@
             </div>
             <div style="cursor: pointer; font-size: 20px;" onclick="togglePowerMenu()">⏻</div>
             <div id="power-menu">
+                <div class="cm-item" onclick="powerAction('lock')">🔒 Lock</div>
                 <div class="cm-item" onclick="powerAction('logout')">🔓 Sign out</div>
                 <div class="cm-item" onclick="powerAction('restart')">🔄 Restart</div>
                 <div class="cm-item" onclick="powerAction('shutdown')">⏻ Shut down</div>
@@ -574,10 +646,11 @@
         <div class="window-content" style="display: flex; gap: 0; padding: 0;">
             <div style="width: 180px; background: rgba(0,0,0,0.2); padding: 20px; border-right: 1px solid rgba(255,255,255,0.05);">
                 <div class="sidebar-item active" onclick="showSettingsSection(this, 'system')">System</div>
-                <div class="sidebar-item" onclick="showSettingsSection(this, 'personalization')">Personalization</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'personalization')">Personalizacja</div>
                 <div class="sidebar-item" onclick="showSettingsSection(this, 'account')">HypeAccount</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'security')">Bezpieczeństwo</div>
                 <div class="sidebar-item" onclick="showSettingsSection(this, 'cloud')">Hyper Cloud</div>
-                <div class="sidebar-item" onclick="showSettingsSection(this, 'updates')">Updates</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'updates')">Aktualizacje</div>
             </div>
             <div style="flex: 1; padding: 30px; overflow-y: auto;" id="settings-content">
                 <!-- SYSTEM SECTION -->
@@ -609,15 +682,15 @@
 
                 <!-- PERSONALIZATION SECTION -->
                 <div id="settings-personalization" class="settings-section">
-                    <h2 style="margin-top: 0; font-weight: 300;">Personalization</h2>
+                    <h2 style="margin-top: 0; font-weight: 300;">Personalizacja</h2>
                     <div class="settings-card">
-                        <h3>Wallpaper</h3>
-                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Enter image URL to change wallpaper</p>
+                        <h3>Tapeta</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Wpisz URL obrazu, aby zmienić tapetę</p>
                         <input type="text" id="wall-input" class="ai-input" placeholder="https://..." style="width: 100%; margin-bottom: 10px;">
-                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeWall()">Apply Wallpaper</button>
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeWall()">Zastosuj tapetę</button>
                     </div>
                     <div class="settings-card">
-                        <h3>System Theme</h3>
+                        <h3>Motyw systemu</h3>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <div style="width: 40px; height: 40px; border-radius: 50%; background: #764ba2; border: 2px solid white; cursor: pointer;"></div>
                             <div style="width: 40px; height: 40px; border-radius: 50%; background: #3498db; cursor: pointer;"></div>
@@ -642,40 +715,79 @@
 
                     <div id="premium-promo" class="settings-card" style="border: 1px solid #f1c40f; background: rgba(241, 196, 15, 0.05);">
                         <h3 style="color: #f1c40f; margin-top: 0;">PremiumHypeAccount</h3>
-                        <p style="font-size: 14px;">Unlock advanced HypeAI features and unlimited cloud storage.</p>
-                        <p style="font-weight: bold; font-size: 18px;">70 ZŁ <span style="font-size: 12px; font-weight: normal;">/ day</span></p>
-                        <button class="store-btn" style="background: #f1c40f; color: black; width: auto; padding: 10px 25px; font-weight: bold;" onclick="buyPremium()">Upgrade Now</button>
+                        <p style="font-size: 14px;">Odblokuj zaawansowane funkcje HypeAI i nielimitowaną chmurę.</p>
+                        <p style="font-weight: bold; font-size: 18px;">70 ZŁ <span style="font-size: 12px; font-weight: normal;">/ dzień</span></p>
+                        <button class="store-btn" style="background: #f1c40f; color: black; width: auto; padding: 10px 25px; font-weight: bold;" onclick="buyPremium()">Ulepsz teraz</button>
                     </div>
 
                     <div class="settings-card">
-                        <h3>Privacy & Security</h3>
+                        <h3>Prywatność i Synchronizacja</h3>
                         <div class="settings-row">
-                            <span>Account Syncing</span>
+                            <span>Synchronizacja konta</span>
                             <div id="sync-toggle" class="toggle-switch on" onclick="toggleSync(this)"></div>
                         </div>
                         <div class="settings-row">
-                            <span>Two-Factor Auth</span>
+                            <span>Weryfikacja dwuetapowa</span>
                             <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
                         </div>
                     </div>
-                    <button class="store-btn" style="width: auto; padding: 10px 25px; background: #e74c3c;" onclick="location.href='index.html'">Sign Out</button>
+                    <button id="unsubscribe-btn" class="store-btn" style="width: auto; padding: 10px 25px; background: #7f8c8d; display: none; margin-bottom: 10px;" onclick="unsubscribePremium()">Anuluj subskrypcję Premium</button>
+                    <button class="store-btn" style="width: auto; padding: 10px 25px; background: #e74c3c;" onclick="location.href='index.html'">Wyloguj</button>
+                </div>
+
+                <!-- SECURITY SECTION -->
+                <div id="settings-security" class="settings-section">
+                    <h2 style="margin-top: 0; font-weight: 300;">Bezpieczeństwo</h2>
+                    
+                    <div class="settings-card">
+                        <h3>Hasło do PC</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Zmień hasło używane do odblokowania tego komputera.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="password" id="pc-old-pass" class="ai-input" placeholder="Aktualne hasło PC" style="width: 100%;">
+                            <input type="password" id="pc-new-pass" class="ai-input" placeholder="Nowe hasło PC" style="width: 100%;">
+                            <input type="password" id="pc-confirm-pass" class="ai-input" placeholder="Potwierdź nowe hasło PC" style="width: 100%;">
+                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changePCPassword()">Zmień hasło PC</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Hasło HypeAccount</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Zmień hasło do swojego konta HypeAccount (Cloud).</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="password" id="hype-old-pass" class="ai-input" placeholder="Aktualne hasło Hype" style="width: 100%;">
+                            <input type="password" id="hype-new-pass" class="ai-input" placeholder="Nowe hasło Hype" style="width: 100%;">
+                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeHypePassword()">Zmień hasło Hype</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>Windows Hello (Symulacja)</h3>
+                        <div class="settings-row">
+                            <span>Odcisk palca</span>
+                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Skonfiguruj</button>
+                        </div>
+                        <div class="settings-row">
+                            <span>Rozpoznawanie twarzy</span>
+                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Skonfiguruj</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- CLOUD SECTION -->
                 <div id="settings-cloud" class="settings-section">
                     <h2 style="margin-top: 0; font-weight: 300;">Hyper Cloud</h2>
                     <div class="settings-card" style="border-color: #27c93f;">
-                        <h3 style="color: #27c93f;">Cloud Connected</h3>
-                        <p>All your files are safely backed up in the cloud.</p>
+                        <h3 style="color: #27c93f;">Chmura Połączona</h3>
+                        <p>Wszystkie Twoje pliki są bezpiecznie kopiowane do chmury.</p>
                         <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0;">
                             <div id="cloud-progress" style="width: 15%; height: 100%; background: #27c93f; border-radius: 4px; transition: 0.5s;"></div>
                         </div>
-                        <p style="font-size: 12px; color: #aaa;" id="cloud-usage-text">1.5 GB of 10 GB used</p>
+                        <p style="font-size: 12px; color: #aaa;" id="cloud-usage-text">Użyto 1.5 GB z 10 GB</p>
                     </div>
-                    <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="showCloudPlans()">Sync Now / Upgrade</button>
+                    <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="showCloudPlans()">Synchronizuj / Ulepsz</button>
                     
                     <div id="cloud-plans" style="display: none; margin-top: 20px;">
-                        <h3>Upgrade Storage</h3>
+                        <h3>Ulepsz miejsce w chmurze</h3>
                         <div class="settings-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(500, 50)">
                                 <b>500 GB</b><br><span style="color: #27c93f;">50 ZŁ</span>
@@ -698,11 +810,11 @@
 
                 <!-- UPDATES SECTION -->
                 <div id="settings-updates" class="settings-section">
-                    <h2 style="margin-top: 0; font-weight: 300;">Updates</h2>
+                    <h2 style="margin-top: 0; font-weight: 300;">Aktualizacje</h2>
                     <div class="settings-card">
-                        <h3>Status: Up to date</h3>
-                        <p style="color: #aaa; font-size: 13px;">Last checked: Today, 12:45 PM</p>
-                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="this.innerText='Checking...'; setTimeout(()=>this.innerText='No updates available', 2000)">Check for updates</button>
+                        <h3>Status: System aktualny</h3>
+                        <p style="color: #aaa; font-size: 13px;">Ostatnio sprawdzono: Dzisiaj, 12:45</p>
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="this.innerText='Sprawdzanie...'; setTimeout(()=>this.innerText='Brak nowych aktualizacji', 2000)">Sprawdź aktualizacje</button>
                     </div>
                 </div>
             </div>
@@ -854,29 +966,138 @@
         <div class="cm-item" onclick="openApp('settings')">⚙️ Personalize</div>
     </div>
 
+    <!-- INTEGRATED LOCK SCREEN -->
+    <div id="lockscreen-overlay" onclick="showLSLogin()">
+        <div class="ls-content">
+            <div class="ls-time-container">
+                <h1 class="ls-clock" id="ls-clock">12:00</h1>
+                <p class="ls-date" id="ls-date">Friday, March 28</p>
+            </div>
+
+            <div class="ls-user-container" id="ls-login-form">
+                <div class="ls-avatar">👤</div>
+                <div style="font-size: 24px; margin-bottom: 5px;" id="ls-username">Hype User</div>
+                <input type="password" class="ls-login-input" id="ls-pass-input" placeholder="Enter Password" onkeydown="if(event.key==='Enter') unlockOS()">
+                <p style="font-size: 12px; color: #aaa; cursor: pointer;" onclick="unlockOS()">Click to sign in</p>
+            </div>
+
+            <div style="font-size: 14px; opacity: 0.7;" id="ls-hint">Click anywhere to unlock</div>
+        </div>
+    </div>
+
     <script>
         // Init User Info
         const savedUser = localStorage.getItem('bootos_user') || 'Hype User';
         const savedPass = localStorage.getItem('bootos_pass') || '1234';
         const savedEmail = localStorage.getItem('bootos_email') || `${savedUser.toLowerCase().replace(/\s+/g, '')}@hype.os`;
+        const savedWall = localStorage.getItem('bootos_wallpaper');
+        
+        if(savedWall) {
+            document.body.style.background = `url('${savedWall}') center/cover no-repeat`;
+            const ls = document.getElementById('lockscreen-overlay');
+            if(ls) ls.style.background = `url('${savedWall}') center/cover no-repeat`;
+        }
         
         document.getElementById('username-display').innerText = savedUser;
         document.getElementById('set-user-display').innerText = savedUser;
         document.getElementById('user-gmail-display').innerText = savedEmail;
+        document.getElementById('ls-username').innerText = savedUser;
+
+        function showLSLogin() {
+            document.getElementById('ls-login-form').style.display = 'flex';
+            document.getElementById('ls-hint').style.display = 'none';
+            document.getElementById('ls-pass-input').focus();
+        }
+
+        function unlockOS() {
+            const inputPass = document.getElementById('ls-pass-input').value;
+            const savedPass = localStorage.getItem('bootos_pass') || '1234';
+            
+            if(inputPass === savedPass) {
+                document.getElementById('lockscreen-overlay').classList.add('unlocked');
+                document.getElementById('ls-pass-input').value = "";
+            } else {
+                alert("Incorrect password!");
+                document.getElementById('ls-pass-input').value = "";
+            }
+        }
 
         function buyPremium() {
-            if(confirm(`Do you want to subscribe to PremiumHypeAccount for 70 ZŁ / day?\nAccount: ${savedEmail}`)) {
+            if(confirm(`Czy chcesz subskrybować PremiumHypeAccount za 70 ZŁ / dzień?\nKonto: ${savedEmail}`)) {
                 document.getElementById('account-type-tag').innerText = "PremiumHypeAccount Member";
                 document.getElementById('account-type-tag').style.color = "#f1c40f";
                 document.getElementById('premium-promo').style.display = 'none';
                 document.getElementById('premium-status-card').style.borderColor = "#f1c40f";
+                document.getElementById('unsubscribe-btn').style.display = 'block';
                 
                 // Update Cloud Storage to Unlimited
                 document.getElementById('cloud-progress').style.width = '2%';
-                document.getElementById('cloud-usage-text').innerText = '1.5 GB of ∞ Unlimited used';
+                document.getElementById('cloud-usage-text').innerText = 'Użyto 1.5 GB z ∞ Nielimitowane';
                 
-                alert(`Welcome to PremiumHypeAccount, ${savedUser}! Your subscription is now active.`);
+                alert(`Witaj w PremiumHypeAccount, ${savedUser}! Twoja subskrypcja jest aktywna.`);
             }
+        }
+
+        function unsubscribePremium() {
+            if(confirm("Czy na pewno chcesz anulować subskrypcję PremiumHypeAccount? Stracisz nielimitowane miejsce i zaawansowane funkcje AI.")) {
+                document.getElementById('account-type-tag').innerText = "Standard Member";
+                document.getElementById('account-type-tag').style.color = "#aaa";
+                document.getElementById('premium-promo').style.display = 'block';
+                document.getElementById('premium-status-card').style.borderColor = "rgba(255,255,255,0.1)";
+                document.getElementById('unsubscribe-btn').style.display = 'none';
+                
+                // Revert Cloud Storage to default 10GB
+                document.getElementById('cloud-progress').style.width = '15%';
+                document.getElementById('cloud-usage-text').innerText = 'Użyto 1.5 GB z 10 GB';
+                
+                alert("Subskrypcja została anulowana. Twoje konto powróciło do wersji Standard.");
+            }
+        }
+
+        function changePCPassword() {
+            const oldP = document.getElementById('pc-old-pass').value;
+            const newP = document.getElementById('pc-new-pass').value;
+            const confirmP = document.getElementById('pc-confirm-pass').value;
+            const currentPass = localStorage.getItem('bootos_pass') || '1234';
+
+            if(oldP !== currentPass) {
+                alert("Niepoprawne aktualne hasło PC!");
+                return;
+            }
+            if(newP === "") {
+                alert("Nowe hasło nie może być puste!");
+                return;
+            }
+            if(newP !== confirmP) {
+                alert("Nowe hasła nie zgadzają się!");
+                return;
+            }
+
+            localStorage.setItem('bootos_pass', newP);
+            alert("Hasło PC zostało pomyślnie zmienione!");
+            document.getElementById('pc-old-pass').value = "";
+            document.getElementById('pc-new-pass').value = "";
+            document.getElementById('pc-confirm-pass').value = "";
+        }
+
+        function changeHypePassword() {
+            const oldP = document.getElementById('hype-old-pass').value;
+            const newP = document.getElementById('hype-new-pass').value;
+            const currentPass = localStorage.getItem('bootos_hype_pass') || 'admin';
+
+            if(oldP !== currentPass) {
+                alert("Niepoprawne aktualne hasło HypeAccount!");
+                return;
+            }
+            if(newP === "") {
+                alert("Nowe hasło nie może być puste!");
+                return;
+            }
+
+            localStorage.setItem('bootos_hype_pass', newP);
+            alert("Hasło HypeAccount zostało pomyślnie zmienione!");
+            document.getElementById('hype-old-pass').value = "";
+            document.getElementById('hype-new-pass').value = "";
         }
 
         function showSettingsSection(el, id) {
@@ -891,6 +1112,8 @@
             const url = document.getElementById('wall-input').value;
             if(url) {
                 document.body.style.background = `url('${url}') center/cover no-repeat`;
+                const ls = document.getElementById('lockscreen-overlay');
+                if(ls) ls.style.background = `url('${url}') center/cover no-repeat`;
                 localStorage.setItem('bootos_wallpaper', url);
                 alert('Wallpaper updated!');
             }
@@ -902,15 +1125,15 @@
         }
 
         function upgradeCloud(sizeGB, price) {
-            if(confirm(`Do you want to upgrade to ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'} for ${price} ZŁ?`)) {
+            if(confirm(`Czy chcesz ulepszyć miejsce do ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'} za ${price} ZŁ?`)) {
                 const totalSize = sizeGB;
                 const used = 1.5;
                 const percent = (used / totalSize) * 100;
                 
                 document.getElementById('cloud-progress').style.width = percent + '%';
-                document.getElementById('cloud-usage-text').innerText = `${used} GB of ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'} used`;
+                document.getElementById('cloud-usage-text').innerText = `Użyto ${used} GB z ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'}`;
                 
-                alert(`Successfully upgraded to ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'}!`);
+                alert(`Miejsce w chmurze zostało ulepszone do ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'}!`);
                 document.getElementById('cloud-plans').style.display = 'none';
             }
         }
@@ -929,8 +1152,18 @@
         // Clock
         function updateClock() {
             const now = new Date();
-            document.getElementById('tb-time').innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('tb-date').innerText = now.toLocaleDateString('en-GB');
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-GB');
+            const fullDateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+            document.getElementById('tb-time').innerText = timeStr;
+            document.getElementById('tb-date').innerText = dateStr;
+            
+            // Integrated Lockscreen clock
+            const lsClock = document.getElementById('ls-clock');
+            const lsDate = document.getElementById('ls-date');
+            if(lsClock) lsClock.innerText = timeStr.replace(' AM', '').replace(' PM', '');
+            if(lsDate) lsDate.innerText = fullDateStr;
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -952,6 +1185,29 @@
         function powerAction(action) {
             const overlay = document.getElementById('restart-overlay');
             const text = document.getElementById('restart-text');
+            const lock = document.getElementById('lockscreen-overlay');
+            
+            if(action === 'lock') {
+                lock.classList.remove('unlocked');
+                document.getElementById('ls-login-form').style.display = 'none';
+                document.getElementById('ls-hint').style.display = 'block';
+                document.getElementById('start-menu').classList.remove('active');
+                return;
+            }
+
+            if(action === 'logout') {
+                overlay.style.display = 'flex';
+                text.innerText = 'Signing out...';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    lock.classList.remove('unlocked');
+                    document.getElementById('ls-login-form').style.display = 'none';
+                    document.getElementById('ls-hint').style.display = 'block';
+                    document.getElementById('start-menu').classList.remove('active');
+                }, 2000);
+                return;
+            }
+
             overlay.style.display = 'flex';
             
             if(action === 'shutdown') {
@@ -959,10 +1215,7 @@
                 setTimeout(() => window.location.href = 'index.html', 3000);
             } else if(action === 'restart') {
                 text.innerText = 'Restarting...';
-                setTimeout(() => window.location.href = 'lockscreen_new.html', 4000);
-            } else if(action === 'logout') {
-                text.innerText = 'Signing out...';
-                setTimeout(() => window.location.href = 'lockscreen_new.html', 2000);
+                setTimeout(() => location.reload(), 4000);
             }
         }
 
