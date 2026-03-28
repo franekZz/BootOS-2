@@ -214,13 +214,13 @@
                 <div class="card">
                     <div class="list-item">
                         <span>WiFi</span>
-                        <input type="checkbox" checked>
+                        <input type="checkbox" id="wifi-toggle" checked onchange="updateSettingsState('wifi', this.checked)">
                     </div>
-                    <div style="margin-top: 20px;">
+                    <div id="wifi-list-container" style="margin-top: 20px;">
                         <h3>Dostępne sieci:</h3>
-                        <div class="list-item"><span>📶 XimiWifi</span><span style="color: #3498db;">Połączono</span></div>
-                        <div class="list-item"><span>📶 ProGamerWifi</span><span>Zabezpieczona</span></div>
-                        <div class="list-item"><span>📶 Tomato</span><span>Sąsiad</span></div>
+                        <div class="list-item" onclick="connectToWifi('XimiWifi')"><span>📶 XimiWifi</span><span id="ximiwifi-status" style="color: #3498db;">Połączono</span></div>
+                        <div class="list-item" onclick="connectToWifi('ProGamerWifi')"><span>📶 ProGamerWifi</span><span id="progamer-status">Zabezpieczona</span></div>
+                        <div class="list-item" onclick="connectToWifi('Tomato')"><span>📶 Tomato</span><span id="tomato-status">Sąsiad</span></div>
                     </div>
                 </div>
             </div>
@@ -231,9 +231,13 @@
                 <div class="card">
                     <div class="list-item">
                         <span>Bluetooth</span>
-                        <input type="checkbox">
+                        <input type="checkbox" id="bt-toggle" onchange="updateSettingsState('bt', this.checked)">
                     </div>
-                    <p style="color: #aaa; margin-top: 15px;">Włącz Bluetooth, aby wyszukać urządzenia.</p>
+                    <p id="bt-status-text" style="color: #aaa; margin-top: 15px;">Włącz Bluetooth, aby wyszukać urządzenia.</p>
+                    <div id="bt-devices" style="display: none;">
+                        <h3>Dostępne urządzenia:</h3>
+                        <p style="font-size: 13px; color: #888;">Brak urządzeń w pobliżu...</p>
+                    </div>
                 </div>
             </div>
 
@@ -242,20 +246,24 @@
                 <h1>Hasła i Zabezpieczenia</h1>
                 <div class="card">
                     <h3>Hasło systemowe</h3>
-                    <p style="color: #aaa;">Zmień swoje hasło do logowania.</p>
-                    <button class="btn" onclick="alert('Zmienianie hasła...')">Zmień hasło</button>
+                    <p style="color: #aaa; font-size: 13px;">Zmień hasło do swojego konta.</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px; width: 250px;">
+                        <input type="password" id="new-pass" placeholder="Nowe hasło" style="padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; border-radius: 5px;">
+                        <button class="btn" onclick="changePassword()">Zaktualizuj hasło</button>
+                    </div>
                 </div>
                 <div class="card">
                     <h3>Zapamiętane hasła WiFi</h3>
-                    <div class="list-item"><span>XimiWifi</span><span>********</span></div>
+                    <div class="list-item"><span>XimiWifi</span><span>bootos</span></div>
+                    <div class="list-item"><span>ProGamerWifi</span><span>pro</span></div>
                 </div>
             </div>
 
             <!-- APPLIKACJE -->
             <div id="section-apps" class="section">
                 <h1>Zainstalowane Aplikacje</h1>
-                <div class="card">
-                    <div class="list-item">
+                <div class="card" id="apps-list">
+                    <div class="list-item" id="app-notepad">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span>📝</span>
                             <div>
@@ -263,9 +271,9 @@
                                 <div style="font-size: 11px; color: #aaa;">Wersja 1.0.4</div>
                             </div>
                         </div>
-                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;">Odinstaluj</button>
+                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;" onclick="uninstallApp('app-notepad', 'Notatnik')">Odinstaluj</button>
                     </div>
-                    <div class="list-item">
+                    <div class="list-item" id="app-ximivast">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span>🛡️</span>
                             <div>
@@ -273,7 +281,17 @@
                                 <div style="font-size: 11px; color: #aaa;">Wersja 2.1.0</div>
                             </div>
                         </div>
-                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;">Odinstaluj</button>
+                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;" onclick="uninstallApp('app-ximivast', 'XimiVast')">Odinstaluj</button>
+                    </div>
+                    <div class="list-item" id="app-browser">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>🌐</span>
+                            <div>
+                                <div>Przeglądarka Ximi</div>
+                                <div style="font-size: 11px; color: #aaa;">Wersja 0.9.8</div>
+                            </div>
+                        </div>
+                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;" onclick="uninstallApp('app-browser', 'Przeglądarka')">Odinstaluj</button>
                     </div>
                 </div>
             </div>
@@ -287,6 +305,7 @@
                         <div>
                             <h2 id="user-name" style="margin:0;">Użytkownik</h2>
                             <p id="ximi-status" style="color: #aaa; margin: 5px 0 0 0;">Konto Lokalne</p>
+                            <p id="system-version" style="color: #3498db; margin: 5px 0 0 0; font-size: 13px;"></p>
                         </div>
                     </div>
                     <button class="btn" id="ximi-action-btn">Zarządzaj kontem</button>
@@ -298,9 +317,11 @@
     <script>
         const savedUser = localStorage.getItem('bootos_user') || 'Użytkownik';
         const isXimi = localStorage.getItem('bootos_ximi') === 'true';
+        const systemVersion = localStorage.getItem('bootos_version') || 'Home';
         const savedWallpaper = localStorage.getItem('bootos_wallpaper') || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80';
 
         document.getElementById('user-name').innerText = savedUser;
+        document.getElementById('system-version').innerText = 'BootOS ' + systemVersion;
         document.getElementById('wallpaper-url').value = savedWallpaper;
         document.getElementById('wallpaper-preview').style.backgroundImage = `url('${savedWallpaper}')`;
 
@@ -314,6 +335,50 @@
             localStorage.setItem('bootos_wallpaper', url);
             document.getElementById('wallpaper-preview').style.backgroundImage = `url('${url}')`;
             alert('Tapeta została zapisana!');
+        }
+
+        function updateSettingsState(type, enabled) {
+            if (type === 'wifi') {
+                const list = document.getElementById('wifi-list-container');
+                list.style.opacity = enabled ? '1' : '0.3';
+                list.style.pointerEvents = enabled ? 'all' : 'none';
+            } else if (type === 'bt') {
+                const text = document.getElementById('bt-status-text');
+                const devices = document.getElementById('bt-devices');
+                text.style.display = enabled ? 'none' : 'block';
+                devices.style.display = enabled ? 'block' : 'none';
+            }
+        }
+
+        function connectToWifi(name) {
+            document.querySelectorAll('#wifi-list-container span[id$="-status"]').forEach(s => {
+                s.innerText = 'Zabezpieczona';
+                s.style.color = 'white';
+            });
+            const status = document.getElementById(name.toLowerCase().replace('wifi', '') + '-status') || document.getElementById(name.toLowerCase() + '-status');
+            if (status) {
+                status.innerText = 'Połączono';
+                status.style.color = '#3498db';
+            }
+            alert('Połączono z siecią ' + name);
+        }
+
+        function changePassword() {
+            const newPass = document.getElementById('new-pass').value;
+            if (newPass.length > 0) {
+                localStorage.setItem('bootos_pass', newPass);
+                alert('Hasło zostało zmienione pomyślnie!');
+                document.getElementById('new-pass').value = '';
+            } else {
+                alert('Wpisz nowe hasło!');
+            }
+        }
+
+        function uninstallApp(id, name) {
+            if (confirm('Czy na pewno chcesz odinstalować aplikację ' + name + '?')) {
+                document.getElementById(id).style.display = 'none';
+                alert('Aplikacja ' + name + ' została odinstalowana.');
+            }
         }
 
         function showSection(id) {
