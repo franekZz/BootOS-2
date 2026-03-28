@@ -300,8 +300,8 @@
     </div>
 
     <!-- PULPIT -->
-    <div id="desktop">
-        <div class="icon" onclick="alert('Otwieranie Notatnika...')">
+    <div id="desktop" oncontextmenu="showContextMenu(event)">
+        <div class="icon" onclick="openApp('notepad')">
             <div class="icon-img">📝</div>
             <div class="icon-text">Notatnik</div>
         </div>
@@ -309,9 +309,13 @@
             <div class="icon-img">⚙️</div>
             <div class="icon-text">Ustawienia</div>
         </div>
-        <div class="icon" onclick="alert('Otwieranie XimiVast...')">
+        <div class="icon" onclick="openApp('ximivast')">
             <div class="icon-img">🛡️</div>
             <div class="icon-text">XimiVast</div>
+        </div>
+        <div class="icon" onclick="openApp('explorer')">
+            <div class="icon-img">�</div>
+            <div class="icon-text">Eksplorator</div>
         </div>
         <div class="icon" onclick="window.location.href='browser.html'">
             <div class="icon-img">🌐</div>
@@ -331,13 +335,17 @@
                 <span>⚙️</span>
                 <span>Ustawienia</span>
             </div>
-            <div class="start-app" onclick="alert('Otwieranie Notatnika...')">
+            <div class="start-app" onclick="openApp('notepad')">
                 <span>📝</span>
                 <span>Notatnik</span>
             </div>
-            <div class="start-app" onclick="alert('Otwieranie XimiVast...')">
+            <div class="start-app" onclick="openApp('ximivast')">
                 <span>🛡️</span>
                 <span>XimiVast</span>
+            </div>
+            <div class="start-app" onclick="openApp('explorer')">
+                <span>📁</span>
+                <span>Eksplorator</span>
             </div>
         </div>
 
@@ -397,6 +405,84 @@
         </div>
     </div>
 
+    <!-- MENU KONTEKSTOWE -->
+    <div id="context-menu">
+        <div class="cm-item" onclick="location.reload()">🔄 Odśwież</div>
+        <div class="cm-separator"></div>
+        <div class="cm-item" onclick="createNewFolder()">📁 Nowy folder</div>
+        <div class="cm-item" onclick="openApp('notepad')">📝 Nowa notatka</div>
+    </div>
+
+    <!-- OKNA APLIKACJI -->
+    <div id="win-notepad" class="window" style="top: 100px; left: 100px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-notepad')">
+            <div class="window-title">📝 Notatnik</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('notepad')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <textarea id="notepad-content" placeholder="Zacznij pisać..."></textarea>
+        </div>
+    </div>
+
+    <div id="win-ximivast" class="window" style="top: 150px; left: 150px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-ximivast')">
+            <div class="window-title">🛡️ XimiVast Antivirus</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('ximivast')"></button>
+            </div>
+        </div>
+        <div class="window-content ximivast-ui">
+            <div id="vast-main">
+                <div class="scan-circle" id="scan-btn" onclick="startScan()">🛡️</div>
+                <h3 id="scan-status">System jest bezpieczny</h3>
+                <p style="color: #aaa; font-size: 12px;">Baza wirusów: v2026.03.28</p>
+                <button class="btn" style="margin-top: 20px;" onclick="showVastLogin()">Panel Gościa / Logowanie</button>
+            </div>
+            <div id="vast-login" style="display: none;">
+                <h3>Logowanie VAST</h3>
+                <div class="vast-login">
+                    <input type="text" id="vast-email" class="vast-input" placeholder="Email (np. vast.ximi.)">
+                    <input type="password" id="vast-key" class="vast-input" placeholder="Klucz (np. VAST)">
+                    <button class="btn" onclick="checkVastLogin()">Zaloguj do VAST</button>
+                    <button class="btn" style="background: #444; margin-top: 10px;" onclick="hideVastLogin()">Wróć</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="win-explorer" class="window" style="top: 200px; left: 200px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-explorer')">
+            <div class="window-title">📁 Eksplorator plików</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('explorer')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="explorer-grid" id="explorer-files">
+                <div class="file-item">
+                    <div class="file-icon">📁</div>
+                    <div class="file-name">Dokumenty</div>
+                </div>
+                <div class="file-item">
+                    <div class="file-icon">📁</div>
+                    <div class="file-name">Obrazy</div>
+                </div>
+                <div class="file-item">
+                    <div class="file-icon">📄</div>
+                    <div class="file-name">readme.txt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- RESTART OVERLAY -->
     <div id="restart-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
         <div style="width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -405,6 +491,92 @@
 
     <style>
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MENU KONTEKSTOWE */
+        #context-menu {
+            position: fixed;
+            background: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            width: 180px;
+            display: none;
+            flex-direction: column;
+            padding: 5px;
+            z-index: 5000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .cm-item {
+            padding: 8px 12px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cm-item:hover { background: rgba(255,255,255,0.1); }
+        .cm-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 5px; }
+
+        /* OKNA APLIKACJI */
+        .window {
+            position: fixed;
+            background: rgba(25, 25, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-width: 400px;
+            min-height: 300px;
+            display: none;
+            flex-direction: column;
+            z-index: 4000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            overflow: hidden;
+            resize: both;
+        }
+
+        .window-header {
+            background: rgba(255,255,255,0.05);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .window-title { font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .window-controls { display: flex; gap: 10px; }
+        .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
+        .win-close { background: #ff5f56; }
+        .win-min { background: #ffbd2e; }
+        .win-max { background: #27c93f; }
+
+        .window-content { flex: 1; padding: 15px; overflow: auto; color: white; }
+
+        /* STYLIZACJA NOTATNIKA */
+        #notepad-content { width: 100%; height: 100%; background: transparent; border: none; color: white; outline: none; resize: none; font-family: 'Consolas', monospace; }
+
+        /* STYLIZACJA XIMIVAST */
+        .ximivast-ui { text-align: center; }
+        .scan-circle { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #3498db; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 40px; cursor: pointer; transition: 0.3s; }
+        .scan-circle:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(52, 152, 219, 0.5); }
+        .scan-circle.scanning { animation: scan-pulse 1.5s infinite; }
+        @keyframes scan-pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(52, 152, 219, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); } }
+
+        /* EKSPLORATOR */
+        .explorer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; }
+        .file-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; padding: 10px; border-radius: 5px; }
+        .file-item:hover { background: rgba(255,255,255,0.1); }
+        .file-icon { font-size: 30px; }
+        .file-name { font-size: 11px; text-align: center; }
+
+        /* LOGIN VAST */
+        .vast-login { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-top: 15px; }
+        .vast-input { width: 100%; padding: 8px; margin-bottom: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; }
     </style>
 
     <script>
@@ -429,6 +601,86 @@
             const qs = document.getElementById('quick-settings');
             qs.style.display = qs.style.display === 'block' ? 'none' : 'block';
             document.body.classList.remove('active-start');
+        }
+
+        /* LOGIKA OKIEN I MENU */
+        function showContextMenu(e) {
+            e.preventDefault();
+            const cm = document.getElementById('context-menu');
+            cm.style.display = 'flex';
+            cm.style.left = e.clientX + 'px';
+            cm.style.top = e.clientY + 'px';
+        }
+
+        function openApp(id) {
+            document.getElementById('win-' + id).style.display = 'flex';
+            document.body.classList.remove('active-start');
+        }
+
+        function closeApp(id) {
+            document.getElementById('win-' + id).style.display = 'none';
+        }
+
+        function createNewFolder() {
+            const grid = document.getElementById('explorer-files');
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.innerHTML = '<div class="file-icon">📁</div><div class="file-name">Nowy folder</div>';
+            grid.appendChild(item);
+            openApp('explorer');
+        }
+
+        function dragWindow(e, id) {
+            const win = document.getElementById(id);
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = () => {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            };
+            document.onmousemove = (e) => {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                win.style.top = (win.offsetTop - pos2) + "px";
+                win.style.left = (win.offsetLeft - pos1) + "px";
+            };
+        }
+
+        /* LOGIKA XIMIVAST */
+        function startScan() {
+            const btn = document.getElementById('scan-btn');
+            const status = document.getElementById('scan-status');
+            btn.classList.add('scanning');
+            status.innerText = 'Skanowanie w poszukiwaniu zagrożeń...';
+            setTimeout(() => {
+                btn.classList.remove('scanning');
+                status.innerText = 'Skanowanie zakończone. System jest czysty.';
+            }, 5000);
+        }
+
+        function showVastLogin() {
+            document.getElementById('vast-main').style.display = 'none';
+            document.getElementById('vast-login').style.display = 'block';
+        }
+
+        function hideVastLogin() {
+            document.getElementById('vast-main').style.display = 'block';
+            document.getElementById('vast-login').style.display = 'none';
+        }
+
+        function checkVastLogin() {
+            const email = document.getElementById('vast-email').value;
+            const key = document.getElementById('vast-key').value;
+            if (email === 'vast.ximi.' && key === 'VAST') {
+                alert('Zalogowano pomyślnie do panelu VAST!');
+                hideVastLogin();
+                document.getElementById('scan-status').innerText = 'Witaj w panelu VAST';
+            } else {
+                alert('Niepoprawne dane logowania!');
+            }
         }
 
         function togglePowerMenu() {
@@ -462,6 +714,9 @@
             }
             if (!event.target.closest('.power-btn')) {
                 document.getElementById('power-menu').style.display = 'none';
+            }
+            if (!event.target.closest('#context-menu')) {
+                document.getElementById('context-menu').style.display = 'none';
             }
         }
 
