@@ -11,8 +11,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-size: cover;
+            background: url('https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/66422359-44b1-44c2-9959-94f31766454f.png') center/cover no-repeat;
             color: white;
         }
 
