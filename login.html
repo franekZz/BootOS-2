@@ -110,33 +110,33 @@
 
     <div class="login-box">
         <div class="user-icon">👤</div>
-        <h2>Zaloguj się</h2>
+        <h2>Konfiguracja konta</h2>
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 25px;">(jak nie chcesz, nic nie wpisuj)</p>
         
         <div class="input-group">
-            <label for="username">Nazwa użytkownika</label>
-            <input type="text" id="username" placeholder="Wpisz nazwę...">
+            <label for="username">Podaj Nazwe</label>
+            <input type="text" id="username" placeholder="Twoja nazwa...">
         </div>
 
         <div class="input-group">
-            <label for="password">Hasło</label>
-            <input type="password" id="password" placeholder="Wpisz hasło...">
+            <label for="password">Ustal hasło Do systemu</label>
+            <input type="password" id="password" placeholder="Twoje hasło...">
         </div>
 
-        <button class="login-btn" onclick="login()">Zaloguj</button>
+        <button class="login-btn" onclick="login()">Wejdź do systemu</button>
         
         <a href="index.html" class="back-link">Wróć do startu</a>
     </div>
 
     <script>
         function login() {
-            const user = document.getElementById('username').value;
+            let user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
 
-            if (user && pass) {
-                alert('Witaj, ' + user + '! Logowanie udane (symulacja).');
-            } else {
-                alert('Proszę podać nazwę użytkownika i hasło.');
-            }
+            if (!user) user = "Użytkownik";
+
+            alert('Witaj w systemie, ' + user + '!');
+            // Tu można dodać przekierowanie do pulpitu w przyszłości
         }
     </script>
 </body>
