@@ -51,6 +51,8 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            position: relative;
         }
 
         .toolbar {
@@ -59,6 +61,8 @@
             border-bottom: 1px solid #bdc3c7;
             display: flex;
             gap: 10px;
+            z-index: 10;
+            position: relative;
         }
 
         .btn {
@@ -71,13 +75,15 @@
             transition: all 0.2s;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             background: #e1e1e1;
         }
 
         .btn:disabled {
             color: #aaa;
+            background-color: #f5f5f5;
             cursor: not-allowed;
+            border-color: #ddd;
         }
 
         .btn.format-btn {
@@ -91,19 +97,50 @@
             border-color: #c0392b;
         }
 
+        .btn-next {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 50px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .btn-next:disabled {
+            background-color: #95a5a6;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+
         .container {
             padding: 30px;
+            position: relative;
+            z-index: 1;
         }
 
         .disk-item {
             width: 300px;
-            background: white;
-            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid transparent;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: all 0.2s;
+            position: relative;
         }
 
         .disk-item:hover {
@@ -113,7 +150,21 @@
 
         .disk-item.selected {
             border-color: #3498db;
-            background-color: #ebf5fb;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .disk-item.installed-target::after {
+            content: "📍 WYBRANY DO INSTALACJI";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #3498db;
+            color: white;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-weight: bold;
         }
 
         .disk-icon {
@@ -226,11 +277,12 @@
         <button class="btn" onclick="location.reload()">Odśwież</button>
         <button id="btn-split" class="btn" disabled onclick="splitDisk()">Rozdziel na partycje</button>
         <button id="btn-format" class="btn format-btn" disabled onclick="startFormat()">Formatuj</button>
-        <button class="btn" onclick="location.href='login.html'">Wyloguj</button>
+        <button id="btn-install" class="btn" disabled onclick="setAsInstallTarget()">Ustaw jako dysk systemowy</button>
     </div>
 
     <div class="container">
-        <h3>Dyski i partycje</h3>
+        <h3>Krok 3: Wybór i przygotowanie partycji</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Wybierz dysk, sformatuj go, a następnie ustaw jako docelowy dla systemu BootOS.</p>
         
         <div id="disk-list" style="display: flex; gap: 20px; flex-wrap: wrap;">
             <div id="disk-c" class="disk-item" onclick="selectDisk('disk-c')">
@@ -273,13 +325,15 @@
 
     <div id="format-overlay">
         <div>
-            <h2>Formatowanie dysku C:...</h2>
-            <p>Proszę czekać, usuwanie danych...</p>
+            <h2>Formatowanie...</h2>
+            <p>Proszę czekać, usuwanie danych i tworzenie systemu plików...</p>
             <div class="progress-container" style="width: 400px; margin: 20px auto;">
                 <div id="format-progress" class="progress-bar" style="width: 0%; background-color: #3498db;"></div>
             </div>
         </div>
     </div>
+
+    <button id="btn-next-step" class="btn-next" disabled onclick="alert('Instalacja plików systemowych rozpocznie się wkrótce...')">Dalej</button>
 
     <script>
         // TWORZENIE BĄBELKÓW
@@ -312,11 +366,14 @@
 
         let selectedDiskId = null;
         let isSplit = false;
+        let formattedDisks = new Set();
+        let installTargetId = null;
 
         function selectDisk(id) {
             const disks = document.querySelectorAll('.disk-item');
             const formatBtn = document.getElementById('btn-format');
             const splitBtn = document.getElementById('btn-split');
+            const installBtn = document.getElementById('btn-install');
             
             disks.forEach(d => d.classList.remove('selected'));
             
@@ -324,13 +381,34 @@
                 selectedDiskId = null;
                 formatBtn.disabled = true;
                 splitBtn.disabled = true;
+                installBtn.disabled = true;
             } else {
                 selectedDiskId = id;
                 document.getElementById(id).classList.add('selected');
                 formatBtn.disabled = false;
-                // Można dzielić tylko dysk C i tylko raz
                 splitBtn.disabled = (id !== 'disk-c' || isSplit);
+                // Pozwól wybrać jako docelowy tylko jeśli sformatowany
+                installBtn.disabled = !formattedDisks.has(id);
             }
+            updateNextButton();
+        }
+
+        function setAsInstallTarget() {
+            if (!selectedDiskId || !formattedDisks.has(selectedDiskId)) return;
+            
+            const disks = document.querySelectorAll('.disk-item');
+            disks.forEach(d => d.classList.remove('installed-target'));
+            
+            installTargetId = selectedDiskId;
+            document.getElementById(installTargetId).classList.add('installed-target');
+            updateNextButton();
+            alert(`Dysk ${document.getElementById(installTargetId).querySelector('strong').innerText} został wybrany jako docelowy.`);
+        }
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('btn-next-step');
+            // Przycisk Dalej jest aktywny tylko jeśli mamy wybrany i sformatowany dysk docelowy
+            nextBtn.disabled = !installTargetId;
         }
 
         function splitDisk() {
@@ -350,16 +428,13 @@
 
             const diskList = document.getElementById('disk-list');
             const cStatus = document.getElementById('c-status');
-            const cBar = document.getElementById('c-progress');
             
             isSplit = true;
             document.getElementById('partition-overlay').style.display = 'none';
 
-            // Aktualizacja dysku C (200GB - nowy rozmiar)
             const remainingSize = 200 - size;
             cStatus.innerText = `95% zajęte (wolne miejsce na ${remainingSize} GB)`;
             
-            // Dodanie nowego dysku
             const diskId = 'disk-' + letter.toLowerCase();
             const newDisk = document.createElement('div');
             newDisk.id = diskId;
@@ -376,6 +451,8 @@
             
             diskList.appendChild(newDisk);
             document.getElementById('btn-split').disabled = true;
+            // Nowo utworzony dysk (jeśli sformatowany przez system przy tworzeniu - tu dla uproszczenia nie)
+            // formattedDisks.add(diskId); 
             alert(`Pomyślnie utworzono partycję ${letter}: (${name}) o rozmiarze ${size} GB.`);
         }
 
@@ -407,7 +484,6 @@
                         const bar = diskElement.querySelector('.progress-bar');
                         const status = diskElement.querySelector('.status-text');
                         
-                        // Wyciąganie rozmiaru z tekstu (uproszczone)
                         let totalSize = "100 GB";
                         if (selectedDiskId === 'disk-c') {
                             totalSize = isSplit ? (200 - parseInt(document.getElementById('part-size').value)) + " GB" : "200 GB";
@@ -418,6 +494,10 @@
                         bar.style.width = '2%';
                         bar.style.backgroundColor = '#2ecc71';
                         status.innerText = `2% zajęte (${totalSize} wolnych)`;
+                        
+                        // Oznacz dysk jako sformatowany
+                        formattedDisks.add(selectedDiskId);
+                        document.getElementById('btn-install').disabled = false;
                         
                         alert(`Formatowanie ${diskLabel} zakończone!`);
                     }, 500);
