@@ -206,7 +206,22 @@
                     <p style="color: #aaa;">Ostatnio sprawdzano: Dzisiaj, 12:45</p>
                     <button class="btn" onclick="alert('Sprawdzanie aktualizacji...')">Sprawdź aktualizacje</button>
                 </div>
+                <div class="card" style="border-color: #9b59b6;">
+                    <h3 style="color: #9b59b6;">Dostępna nowa wersja: BootHypeOS</h3>
+                    <p style="color: #aaa;">Największa aktualizacja w historii BootOS. Nowy interfejs, szybsze działanie i funkcje AI.</p>
+                    <button class="btn" style="background: #9b59b6;" onclick="startHypeUpdate()">Aktualizuj do BootHypeOS</button>
+                </div>
             </div>
+
+            <!-- RESTART OVERLAY DLA USTAWIEŃ -->
+            <div id="update-restart-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
+                <div style="width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #9b59b6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p id="update-status-text" style="margin-top: 20px; font-weight: 300;">Przygotowywanie aktualizacji...</p>
+            </div>
+
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
 
             <!-- WIFI -->
             <div id="section-wifi" class="section">
@@ -387,6 +402,26 @@
             
             document.getElementById('section-' + id).classList.add('active');
             event.currentTarget.classList.add('active');
+        }
+
+        function startHypeUpdate() {
+            const overlay = document.getElementById('update-restart-overlay');
+            const statusText = document.getElementById('update-status-text');
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                statusText.innerText = 'Pobieranie plików BootHypeOS...';
+                setTimeout(() => {
+                    statusText.innerText = 'Instalowanie systemu (75%)...';
+                    setTimeout(() => {
+                        statusText.innerText = 'Uruchamianie ponownie...';
+                        setTimeout(() => {
+                            localStorage.setItem('bootos_version', 'BootHypeOS');
+                            window.location.href = 'welcome_boothype.html';
+                        }, 2000);
+                    }, 3000);
+                }, 3000);
+            }, 2000);
         }
 
         function createBubbles() {
