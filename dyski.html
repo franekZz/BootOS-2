@@ -148,21 +148,70 @@
             margin-top: 5px;
         }
 
-        /* Modal formatowania */
-        #format-overlay {
+        /* Modal formatowania i partycjonowania */
+        #format-overlay, #partition-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             color: white;
             text-align: center;
+            backdrop-filter: blur(5px);
         }
+
+        .modal-box {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #34495e;
+            background: #1a252f;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btns button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-confirm { background: #3498db; color: white; }
+        .btn-cancel { background: #e74c3c; color: white; }
     </style>
 </head>
 <body>
@@ -175,6 +224,7 @@
 
     <div class="toolbar">
         <button class="btn" onclick="location.reload()">Odśwież</button>
+        <button id="btn-split" class="btn" disabled onclick="splitDisk()">Rozdziel na partycje</button>
         <button id="btn-format" class="btn format-btn" disabled onclick="startFormat()">Formatuj</button>
         <button class="btn" onclick="location.href='login.html'">Wyloguj</button>
     </div>
@@ -182,13 +232,42 @@
     <div class="container">
         <h3>Dyski i partycje</h3>
         
-        <div id="disk-c" class="disk-item" onclick="selectDisk()">
-            <div class="disk-icon">💽</div>
-            <div class="disk-info"><strong>Dysk Lokalny (C:)</strong></div>
-            <div class="progress-container">
-                <div id="c-progress" class="progress-bar"></div>
+        <div id="disk-list" style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div id="disk-c" class="disk-item" onclick="selectDisk('disk-c')">
+                <div class="disk-icon">💽</div>
+                <div class="disk-info"><strong>Dysk Lokalny (C:)</strong></div>
+                <div class="progress-container">
+                    <div id="c-progress" class="progress-bar"></div>
+                </div>
+                <div id="c-status" class="status-text">95% zajęte (10 GB wolnych z 200 GB)</div>
             </div>
-            <div id="c-status" class="status-text">95% zajęte (10 GB wolnych z 200 GB)</div>
+        </div>
+    </div>
+
+    <div id="partition-overlay">
+        <div class="modal-box">
+            <h3>Nowa partycja</h3>
+            <div class="input-group">
+                <label>Nazwa dysku:</label>
+                <input type="text" id="part-name" value="Dysk Lokalny">
+            </div>
+            <div class="input-group">
+                <label>Litera dysku:</label>
+                <select id="part-letter">
+                    <option value="D">D:</option>
+                    <option value="E">E:</option>
+                    <option value="F">F:</option>
+                    <option value="G">G:</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Rozmiar (GB):</label>
+                <input type="number" id="part-size" value="100" min="1" max="190">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-confirm" onclick="confirmSplit()">Utwórz</button>
+                <button class="btn-cancel" onclick="document.getElementById('partition-overlay').style.display='none'">Anuluj</button>
+            </div>
         </div>
     </div>
 
@@ -231,33 +310,88 @@
         const user = urlParams.get('user') || 'Użytkownik';
         document.getElementById('user-display').innerText = user;
 
-        let isSelected = false;
+        let selectedDiskId = null;
+        let isSplit = false;
 
-        function selectDisk() {
-            const disk = document.getElementById('disk-c');
+        function selectDisk(id) {
+            const disks = document.querySelectorAll('.disk-item');
             const formatBtn = document.getElementById('btn-format');
+            const splitBtn = document.getElementById('btn-split');
             
-            isSelected = !isSelected;
+            disks.forEach(d => d.classList.remove('selected'));
             
-            if (isSelected) {
-                disk.classList.add('selected');
-                formatBtn.disabled = false;
-            } else {
-                disk.classList.remove('selected');
+            if (selectedDiskId === id) {
+                selectedDiskId = null;
                 formatBtn.disabled = true;
+                splitBtn.disabled = true;
+            } else {
+                selectedDiskId = id;
+                document.getElementById(id).classList.add('selected');
+                formatBtn.disabled = false;
+                // Można dzielić tylko dysk C i tylko raz
+                splitBtn.disabled = (id !== 'disk-c' || isSplit);
             }
         }
 
+        function splitDisk() {
+            if (isSplit) return;
+            document.getElementById('partition-overlay').style.display = 'flex';
+        }
+
+        function confirmSplit() {
+            const name = document.getElementById('part-name').value;
+            const letter = document.getElementById('part-letter').value;
+            const size = parseInt(document.getElementById('part-size').value);
+
+            if (size < 1 || size > 190) {
+                alert('Rozmiar musi być między 1 a 190 GB.');
+                return;
+            }
+
+            const diskList = document.getElementById('disk-list');
+            const cStatus = document.getElementById('c-status');
+            const cBar = document.getElementById('c-progress');
+            
+            isSplit = true;
+            document.getElementById('partition-overlay').style.display = 'none';
+
+            // Aktualizacja dysku C (200GB - nowy rozmiar)
+            const remainingSize = 200 - size;
+            cStatus.innerText = `95% zajęte (wolne miejsce na ${remainingSize} GB)`;
+            
+            // Dodanie nowego dysku
+            const diskId = 'disk-' + letter.toLowerCase();
+            const newDisk = document.createElement('div');
+            newDisk.id = diskId;
+            newDisk.className = 'disk-item';
+            newDisk.onclick = () => selectDisk(diskId);
+            newDisk.innerHTML = `
+                <div class="disk-icon">💽</div>
+                <div class="disk-info"><strong>${name} (${letter}:)</strong></div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%; background-color: #2ecc71;"></div>
+                </div>
+                <div class="status-text">0% zajęte (${size} GB wolnych z ${size} GB)</div>
+            `;
+            
+            diskList.appendChild(newDisk);
+            document.getElementById('btn-split').disabled = true;
+            alert(`Pomyślnie utworzono partycję ${letter}: (${name}) o rozmiarze ${size} GB.`);
+        }
+
         function startFormat() {
-            if (!confirm('OSTRZEŻENIE: Formatowanie usunie wszystkie dane z dysku C. Czy na pewno chcesz kontynuować?')) {
+            if (!selectedDiskId) return;
+            const diskElement = document.getElementById(selectedDiskId);
+            const diskLabel = diskElement.querySelector('strong').innerText;
+            
+            if (!confirm(`OSTRZEŻENIE: Formatowanie usunie wszystkie dane z ${diskLabel}. Kontynuować?`)) {
                 return;
             }
 
             const overlay = document.getElementById('format-overlay');
             const formatBar = document.getElementById('format-progress');
-            const cBar = document.getElementById('c-progress');
-            const cStatus = document.getElementById('c-status');
             
+            overlay.querySelector('h2').innerText = `Formatowanie ${diskLabel}...`;
             overlay.style.display = 'flex';
             
             let progress = 0;
@@ -269,11 +403,23 @@
                     clearInterval(interval);
                     setTimeout(() => {
                         overlay.style.display = 'none';
-                        // Zaktualizuj wygląd dysku po formacie
-                        cBar.style.width = '2%';
-                        cBar.style.backgroundColor = '#2ecc71'; // Zmienia na zielony
-                        cStatus.innerText = '2% zajęte (196 GB wolnych z 200 GB)';
-                        alert('Formatowanie zakończone sukcesem!');
+                        
+                        const bar = diskElement.querySelector('.progress-bar');
+                        const status = diskElement.querySelector('.status-text');
+                        
+                        // Wyciąganie rozmiaru z tekstu (uproszczone)
+                        let totalSize = "100 GB";
+                        if (selectedDiskId === 'disk-c') {
+                            totalSize = isSplit ? (200 - parseInt(document.getElementById('part-size').value)) + " GB" : "200 GB";
+                        } else {
+                            totalSize = document.getElementById('part-size').value + " GB";
+                        }
+
+                        bar.style.width = '2%';
+                        bar.style.backgroundColor = '#2ecc71';
+                        status.innerText = `2% zajęte (${totalSize} wolnych)`;
+                        
+                        alert(`Formatowanie ${diskLabel} zakończone!`);
                     }, 500);
                 }
             }, 50);
