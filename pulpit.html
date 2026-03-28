@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Pulpit</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* FILMOWA ANIMACJA KURSORE */
+        #fake-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            z-index: 10000;
+            pointer-events: none;
+            display: none;
+        }
+
+        #fake-cursor svg {
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }
+
+        /* PULPIT */
+        #desktop {
+            width: 100%;
+            height: calc(100% - 40px);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .icon {
+            width: 80px;
+            height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-img {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        .icon-text {
+            font-size: 12px;
+        }
+
+        /* PASEK ZADAŃ */
+        #taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+            transform: translateY(40px);
+            transition: transform 0.5s ease-out;
+        }
+
+        #start-btn {
+            height: 30px;
+            padding: 0 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+
+        #start-btn:hover {
+            background: #2980b9;
+        }
+
+        /* START MENU ANIMACJA */
+        #start-menu {
+            position: fixed;
+            bottom: 45px;
+            left: 10px;
+            width: 300px;
+            height: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 999;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 20px;
+            color: white;
+        }
+
+        .active-start #start-menu {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SZTUCZNY KURSOR DO ANIMACJI -->
+    <div id="fake-cursor">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+            <path d="M7 2l12 11.2-5.8.8 3.3 5.4-1.8 1.1-3.4-5.5L7 19V2z" stroke="black" stroke-width="1.5"/>
+        </svg>
+    </div>
+
+    <!-- PULPIT -->
+    <div id="desktop">
+        <div class="icon" onclick="alert('Otwieranie Notatnika...')">
+            <div class="icon-img">📝</div>
+            <div class="icon-text">Notatnik</div>
+        </div>
+        <div class="icon" onclick="alert('Otwieranie Ustawień...')">
+            <div class="icon-img">⚙️</div>
+            <div class="icon-text">Ustawienia</div>
+        </div>
+        <div class="icon" onclick="alert('Otwieranie XimiVast...')">
+            <div class="icon-img">🚀</div>
+            <div class="icon-text">XimiVast</div>
+        </div>
+    </div>
+
+    <!-- MENU START -->
+    <div id="start-menu">
+        <h3>Menu Start</h3>
+        <hr style="opacity: 0.2">
+        <p>Witaj w BootOS!</p>
+    </div>
+
+    <!-- PASEK ZADAŃ -->
+    <div id="taskbar">
+        <button id="start-btn">
+            <span>💠</span> Start
+        </button>
+    </div>
+
+    <script>
+        function runCinematicAnimation() {
+            const cursor = document.getElementById('fake-cursor');
+            const taskbar = document.getElementById('taskbar');
+            const desktop = document.getElementById('desktop');
+            const startBtn = document.getElementById('start-btn');
+
+            // 1. Pokaż kursor na środku
+            cursor.style.display = 'block';
+            cursor.style.left = '50%';
+            cursor.style.top = '50%';
+
+            // 2. Po 1s wjedź paskiem zadań i pokaż pulpit
+            setTimeout(() => {
+                taskbar.style.transform = 'translateY(0)';
+                desktop.style.opacity = '1';
+
+                // 3. Przesuń kursor do przycisku START
+                setTimeout(() => {
+                    const rect = startBtn.getBoundingClientRect();
+                    cursor.style.transition = 'all 1.5s ease-in-out';
+                    cursor.style.left = (rect.left + 15) + 'px';
+                    cursor.style.top = (rect.top + 15) + 'px';
+
+                    // 4. "Kliknij" przycisk START
+                    setTimeout(() => {
+                        document.body.classList.add('active-start');
+                        
+                        // 5. Zniknij kursor i oddaj kontrolę użytkownikowi
+                        setTimeout(() => {
+                            cursor.style.display = 'none';
+                            // Pozwól zamykać menu start
+                            document.addEventListener('click', (e) => {
+                                if (!startBtn.contains(e.target)) {
+                                    document.body.classList.remove('active-start');
+                                } else {
+                                    document.body.classList.toggle('active-start');
+                                }
+                            });
+                        }, 500);
+                    }, 1600);
+                }, 1000);
+            }, 1000);
+        }
+
+        window.onload = runCinematicAnimation;
+    </script>
+</body>
+</html>
