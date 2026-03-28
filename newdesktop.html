@@ -11,7 +11,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', sans-serif;
-            background: url('https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/66422359-44b1-44c2-9959-94f31766454f.png') center/cover no-repeat;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
@@ -400,7 +400,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/66422359-44b1-44c2-9959-94f31766454f.png') center/cover no-repeat;
+            background: linear-gradient(45deg, #1e3c72 0%, #2a5298 100%);
             z-index: 200000;
             display: flex;
             flex-direction: column;
@@ -979,6 +979,7 @@
                 <div style="font-size: 24px; margin-bottom: 5px;" id="ls-username">Hype User</div>
                 <input type="password" class="ls-login-input" id="ls-pass-input" placeholder="Enter Password" onkeydown="if(event.key==='Enter') unlockOS()">
                 <p style="font-size: 12px; color: #aaa; cursor: pointer;" onclick="unlockOS()">Click to sign in</p>
+                <p style="font-size: 11px; color: #666; margin-top: 10px;">Domyślne hasło to 1234</p>
             </div>
 
             <div style="font-size: 14px; opacity: 0.7;" id="ls-hint">Click anywhere to unlock</div>
@@ -992,7 +993,9 @@
         const savedEmail = localStorage.getItem('bootos_email') || `${savedUser.toLowerCase().replace(/\s+/g, '')}@hype.os`;
         const savedWall = localStorage.getItem('bootos_wallpaper');
         
-        if(savedWall) {
+        if(savedWall && savedWall.includes('66422359-44b1-44c2-9959-94f31766454f.png')) {
+            localStorage.removeItem('bootos_wallpaper');
+        } else if(savedWall) {
             document.body.style.background = `url('${savedWall}') center/cover no-repeat`;
             const ls = document.getElementById('lockscreen-overlay');
             if(ls) ls.style.background = `url('${savedWall}') center/cover no-repeat`;
@@ -1013,11 +1016,13 @@
             const inputPass = document.getElementById('ls-pass-input').value;
             const savedPass = localStorage.getItem('bootos_pass') || '1234';
             
+            console.log("Input:", inputPass, "Saved:", savedPass); // Add logging for debugging
+
             if(inputPass === savedPass) {
                 document.getElementById('lockscreen-overlay').classList.add('unlocked');
                 document.getElementById('ls-pass-input').value = "";
             } else {
-                alert("Incorrect password!");
+                alert("Incorrect password! Hint: The default is 1234");
                 document.getElementById('ls-pass-input').value = "";
             }
         }
