@@ -370,6 +370,10 @@
                 <span>📁</span>
                 <span>Eksplorator</span>
             </div>
+            <div class="start-app" onclick="openApp('ximistore')">
+                <span>🏪</span>
+                <span>Sklep</span>
+            </div>
         </div>
 
         <div class="start-footer">
@@ -434,7 +438,8 @@
 
     <!-- MENU KONTEKSTOWE -->
     <div id="context-menu">
-        <div class="cm-item" onclick="location.reload()">🔄 Odśwież</div>
+        <div id="cm-refresh" class="cm-item" onclick="location.reload()">🔄 Odśwież</div>
+        <div id="cm-delete" class="cm-item" style="display:none; color:#e74c3c;" onclick="deleteSelectedIcon()">🗑️ Usuń</div>
         <div class="cm-separator"></div>
         <div class="cm-item" onclick="createNewFolder()">📁 Nowy folder</div>
         <div class="cm-item" onclick="openApp('notepad')">📝 Nowa notatka</div>
@@ -518,6 +523,43 @@
         <div class="window-content">
             <div class="explorer-grid" id="trash-files">
                 <!-- Usunięte pliki -->
+            </div>
+        </div>
+    </div>
+
+    <!-- XIMISTORE -->
+    <div id="win-ximistore" class="window" style="top: 180px; left: 180px; width: 600px; height: 450px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-ximistore')">
+            <div class="window-title">🏪 XimiStore</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('ximistore')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <h2 style="margin-top:0;">Sklep z aplikacjami</h2>
+            <div class="explorer-grid" id="store-apps">
+                <div class="file-item" onclick="installFromStore('Notatnik', '📝')">
+                    <div class="file-icon">📝</div>
+                    <div class="file-name">Notatnik</div>
+                    <button class="btn" style="font-size: 10px; padding: 5px;">Zainstaluj</button>
+                </div>
+                <div class="file-item" onclick="installFromStore('XimiVast', '🛡️')">
+                    <div class="file-icon">🛡️</div>
+                    <div class="file-name">XimiVast</div>
+                    <button class="btn" style="font-size: 10px; padding: 5px;">Zainstaluj</button>
+                </div>
+                <div class="file-item" onclick="installFromStore('Saper', '💣')">
+                    <div class="file-icon">💣</div>
+                    <div class="file-name">Saper</div>
+                    <button class="btn" style="font-size: 10px; padding: 5px;">Zainstaluj</button>
+                </div>
+                <div class="file-item" onclick="installFromStore('Kalkulator', '🔢')">
+                    <div class="file-icon">🔢</div>
+                    <div class="file-name">Kalkulator</div>
+                    <button class="btn" style="font-size: 10px; padding: 5px;">Zainstaluj</button>
+                </div>
             </div>
         </div>
     </div>
@@ -636,8 +678,14 @@
 
         /* LOGIKA PRZESUWANIA I ZAZNACZANIA */
         let selectionStartX, selectionStartY;
+        let rightClickedIcon = null;
+
         function startSelection(e) {
             if (e.target.id !== 'desktop') return;
+            rightClickedIcon = null;
+            document.getElementById('cm-delete').style.display = 'none';
+            document.getElementById('cm-refresh').style.display = 'flex';
+            
             selectionStartX = e.clientX;
             selectionStartY = e.clientY;
             const box = document.getElementById('selection-box');
@@ -679,6 +727,14 @@
 
         function dragIcon(e, el) {
             e.stopPropagation();
+            if (e.button === 2) { // Prawy przycisk
+                rightClickedIcon = el;
+                document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+                el.classList.add('selected');
+                return;
+            }
+            
+            rightClickedIcon = null;
             document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
 
@@ -697,12 +753,49 @@
             };
         }
 
+        /* LOGIKA OKIEN I MENU */
+        function showContextMenu(e) {
+            e.preventDefault();
+            const cm = document.getElementById('context-menu');
+            const delBtn = document.getElementById('cm-delete');
+            const refreshBtn = document.getElementById('cm-refresh');
+
+            if (rightClickedIcon) {
+                delBtn.style.display = 'flex';
+                refreshBtn.style.display = 'none';
+            } else {
+                delBtn.style.display = 'none';
+                refreshBtn.style.display = 'flex';
+            }
+
+            cm.style.display = 'flex';
+            cm.style.left = e.clientX + 'px';
+            cm.style.top = e.clientY + 'px';
+        }
+
+        function deleteSelectedIcon() {
+            if (rightClickedIcon) {
+                const name = rightClickedIcon.querySelector('.icon-text').innerText;
+                const icon = rightClickedIcon.querySelector('.icon-img').innerText;
+                
+                // Przenieś do Programy na Dysku C
+                programsFiles.push({ name: name, type: 'file', icon: icon, isApp: true });
+                
+                // Usuń z pulpitu
+                rightClickedIcon.remove();
+                rightClickedIcon = null;
+                alert(`Program ${name} został przeniesiony do folderu Programy na Dysku C.`);
+            }
+        }
+
         /* LOGIKA PLIKÓW I KOSZA */
         let diskFiles = [
             { name: 'System', type: 'folder', system: true },
             { name: 'Użytkownicy', type: 'folder' },
+            { name: 'Programy', type: 'folder', isProgramFolder: true },
             { name: 'BootOS_Config', type: 'file' }
         ];
+        let programsFiles = [];
         let trashFiles = [];
 
         function showDiskC() {
@@ -712,6 +805,9 @@
                 const item = document.createElement('div');
                 item.className = 'file-item';
                 item.innerHTML = `<div class="file-icon">${file.type === 'folder' ? '📁' : '📄'}</div><div class="file-name">${file.name}</div>`;
+                item.onclick = () => {
+                    if (file.isProgramFolder) showPrograms();
+                };
                 item.oncontextmenu = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -722,6 +818,43 @@
                 grid.appendChild(item);
             });
             openApp('explorer');
+        }
+
+        function showPrograms() {
+            const grid = document.getElementById('explorer-files');
+            grid.innerHTML = '<div class="file-item" onclick="showDiskC()" style="width:100%; border-bottom:1px solid #333; margin-bottom:10px;">⬅ Wróć do C:</div>';
+            programsFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `<div class="file-icon">${file.icon || '📄'}</div><div class="file-name">${file.name}</div>`;
+                item.onclick = () => {
+                    if (confirm(`Czy chcesz przywrócić ${file.name} na pulpit?`)) {
+                        restoreToDesktop(index);
+                    }
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        function restoreToDesktop(index) {
+            const app = programsFiles.splice(index, 1)[0];
+            const desktop = document.getElementById('desktop');
+            const icon = document.createElement('div');
+            icon.className = 'icon';
+            icon.style.top = '50px';
+            icon.style.left = '50px';
+            icon.setAttribute('onmousedown', 'dragIcon(event, this)');
+            icon.innerHTML = `<div class="icon-img">${app.icon}</div><div class="icon-text">${app.name}</div>`;
+            
+            // Dodaj logikę otwierania w zależności od nazwy
+            icon.ondblclick = () => {
+                if (app.name === 'Notatnik') openApp('notepad');
+                else if (app.name === 'XimiVast') openApp('ximivast');
+                else alert(`Otwieranie ${app.name}...`);
+            };
+            
+            desktop.appendChild(icon);
+            showPrograms();
         }
 
         function deleteFile(index) {
@@ -752,17 +885,29 @@
             }, 10000);
         }
 
-        function openTrash() {
-            const grid = document.getElementById('trash-files');
-            grid.innerHTML = '';
-            trashFiles.forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'file-item';
-                item.innerHTML = `<div class="file-icon">${file.type === 'folder' ? '📁' : '📄'}</div><div class="file-name">${file.name}</div>`;
-                grid.appendChild(item);
-            });
-            openApp('trash');
-        }
+        function installFromStore(name, icon) {
+             alert(`Instalowanie ${name}...`);
+             setTimeout(() => {
+                 const desktop = document.getElementById('desktop');
+                 const iconDiv = document.createElement('div');
+                 iconDiv.className = 'icon';
+                 iconDiv.style.top = '100px';
+                 iconDiv.style.left = '100px';
+                 iconDiv.setAttribute('onmousedown', 'dragIcon(event, this)');
+                 iconDiv.innerHTML = `<div class="icon-img">${icon}</div><div class="icon-text">${name}</div>`;
+                 
+                 iconDiv.ondblclick = () => {
+                     if (name === 'Notatnik') openApp('notepad');
+                     else if (name === 'XimiVast') openApp('ximivast');
+                     else if (name === 'Saper') alert('💣 Saper: Bum!');
+                     else if (name === 'Kalkulator') alert('🔢 Kalkulator: 2+2=4');
+                     else alert(`Otwieranie ${name}...`);
+                 };
+                 
+                 desktop.appendChild(iconDiv);
+                 alert(`${name} został pomyślnie zainstalowany!`);
+             }, 2000);
+         }
 
         function updateTaskbarClock() {
             const now = new Date();
