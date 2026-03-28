@@ -148,11 +148,18 @@
         }
 
         function unlock() {
-            // W tej symulacji każde hasło lub kliknięcie "sign in" odblokowuje
-            document.body.classList.add('unlocking');
-            setTimeout(() => {
-                window.location.href = 'newdesktop.html';
-            }, 800);
+            const inputPass = document.getElementById('password-input').value;
+            const savedPass = localStorage.getItem('bootos_pass') || '1234';
+            
+            if(inputPass === savedPass) {
+                document.body.classList.add('unlocking');
+                setTimeout(() => {
+                    window.location.href = 'newdesktop.html';
+                }, 800);
+            } else {
+                alert("Incorrect password!");
+                document.getElementById('password-input').value = "";
+            }
         }
     </script>
 </body>
