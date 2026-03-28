@@ -136,7 +136,8 @@
             if (!user) user = "Użytkownik";
 
             alert('Witaj w systemie, ' + user + '!');
-            // Tu można dodać przekierowanie do pulpitu w przyszłości
+            // Przekierowanie do zarządzania dyskami
+            window.location.href = "dyski.html?user=" + encodeURIComponent(user);
         }
     </script>
 </body>
