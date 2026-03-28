@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Instalacja</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        /* TŁO Z BĄBELKAMI */
+        #animation-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(2px);
+            animation: float 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+
+        .install-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 500px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 300;
+            text-align: center;
+        }
+
+        .step {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .step.active {
+            color: white;
+            font-weight: bold;
+        }
+
+        .step.done {
+            color: #2ecc71;
+        }
+
+        .step-num {
+            width: 30px;
+            height: 30px;
+            border: 2px solid currentColor;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            font-size: 14px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #222;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #main-progress {
+            width: 0%;
+            height: 100%;
+            background: #3498db;
+            transition: width 0.1s linear;
+        }
+
+        .status-text {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #aaa;
+            text-align: right;
+        }
+
+        #finish-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            background: #2ecc71;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="animation-background"></div>
+
+    <div class="install-box">
+        <h2>Instalacja BootOS</h2>
+        
+        <div id="step1" class="step active">
+            <div class="step-num">1</div>
+            <div>Instalowanie Plików na Dysk</div>
+        </div>
+        <div id="progress-wrapper" class="progress-container">
+            <div id="main-progress"></div>
+        </div>
+        <div id="status-1" class="status-text" style="display:none;">0%</div>
+
+        <div id="step2" class="step">
+            <div class="step-num">2</div>
+            <div>Pobieranie Aktualizacji</div>
+        </div>
+
+        <div id="step3" class="step">
+            <div class="step-num">3</div>
+            <div>Kończenie</div>
+        </div>
+
+        <button id="finish-btn" onclick="alert('System został pomyślnie zainstalowany!')">Uruchom system</button>
+    </div>
+
+    <script>
+        // TWORZENIE BĄBELKÓW
+        function createBubbles() {
+            const screen = document.getElementById('animation-background');
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
+                screen.appendChild(bubble);
+            }
+        }
+
+        // PROCES INSTALACJI
+        function startInstallation() {
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const progressWrapper = document.getElementById('progress-wrapper');
+            const progressBar = document.getElementById('main-progress');
+            const statusText = document.getElementById('status-1');
+
+            // KROK 1: Instalowanie Plików (20 sekund)
+            progressWrapper.style.display = 'block';
+            statusText.style.display = 'block';
+            
+            let progress = 0;
+            const duration = 20000; // 20 sekund
+            const intervalTime = 100;
+            const step = (intervalTime / duration) * 100;
+
+            const installTimer = setInterval(() => {
+                progress += step;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(installTimer);
+                    
+                    // Zakończenie kroku 1
+                    step1.classList.remove('active');
+                    step1.classList.add('done');
+                    progressBar.style.width = '100%';
+                    statusText.innerText = '100%';
+
+                    // KROK 2: Pobieranie Aktualizacji (3 sekundy)
+                    setTimeout(() => {
+                        step2.classList.add('active');
+                        statusText.innerText = 'Sprawdzanie aktualizacji...';
+                        
+                        setTimeout(() => {
+                            step2.classList.remove('active');
+                            step2.classList.add('done');
+                            
+                            // KROK 3: Kończenie (2 sekundy)
+                            setTimeout(() => {
+                                step3.classList.add('active');
+                                statusText.innerText = 'Konfigurowanie systemu...';
+                                
+                                setTimeout(() => {
+                                    step3.classList.remove('active');
+                                    step3.classList.add('done');
+                                    statusText.innerText = 'Instalacja zakończona!';
+                                    document.getElementById('finish-btn').style.display = 'block';
+                                }, 2000);
+                            }, 1000);
+                        }, 3000);
+                    }, 1000);
+                }
+                progressBar.style.width = progress + '%';
+                statusText.innerText = Math.floor(progress) + '%';
+            }, intervalTime);
+        }
+
+        window.onload = () => {
+            createBubbles();
+            setTimeout(startInstallation, 1000);
+        };
+    </script>
+</body>
+</html>
