@@ -1013,19 +1013,22 @@
         }
 
         function unlockOS() {
-            const inputPass = document.getElementById('ls-pass-input').value;
-            const savedPass = localStorage.getItem('bootos_pass') || '1234';
-            
-            console.log("Input:", inputPass, "Saved:", savedPass); // Add logging for debugging
+    const inputPass = document.getElementById('ls-pass-input').value;
+    // Pobieramy hasło z pamięci, a jeśli go nie ma, używamy '1234'
+    const storedPass = localStorage.getItem('bootos_pass') || '1234';
+    
+    console.log("Próba odblokowania..."); 
 
-            if(inputPass === savedPass) {
-                document.getElementById('lockscreen-overlay').classList.add('unlocked');
-                document.getElementById('ls-pass-input').value = "";
-            } else {
-                alert("Incorrect password! Hint: The default is 1234");
-                document.getElementById('ls-pass-input').value = "";
-            }
-        }
+    // Sprawdzamy: czy wpisano 1234 LUB czy wpisano hasło z pamięci
+    if(inputPass === "1234" || inputPass === storedPass) {
+        document.getElementById('lockscreen-overlay').classList.add('unlocked');
+        document.getElementById('ls-pass-input').value = "";
+        console.log("Odblokowano!");
+    } else {
+        alert("Incorrect password! Default is 1234");
+        document.getElementById('ls-pass-input').value = "";
+    }
+}
 
         function buyPremium() {
             if(confirm(`Czy chcesz subskrybować PremiumHypeAccount za 70 ZŁ / dzień?\nKonto: ${savedEmail}`)) {
