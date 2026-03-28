@@ -11,7 +11,10 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', sans-serif;
-            background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+            background-color: black;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
             background-size: cover;
         }
 
@@ -42,6 +45,7 @@
             align-content: flex-start;
             opacity: 0;
             transition: opacity 1s ease-in-out;
+            z-index: 1;
         }
 
         .icon {
@@ -57,6 +61,7 @@
             border-radius: 5px;
             transition: background 0.2s;
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            z-index: 2;
         }
 
         .icon:hover {
@@ -82,12 +87,35 @@
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             display: flex;
+            justify-content: space-between;
             align-items: center;
             padding: 0 10px;
             box-sizing: border-box;
             z-index: 1000;
             transform: translateY(40px);
             transition: transform 0.5s ease-out;
+        }
+
+        .taskbar-left {
+            display: flex;
+            gap: 5px;
+        }
+
+        .taskbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            padding: 0 5px;
+            cursor: pointer;
+            height: 100%;
+            border-radius: 5px;
+            transition: 0.2s;
+        }
+
+        .taskbar-right:hover {
+            background: rgba(255,255,255,0.1);
         }
 
         #start-btn {
@@ -102,29 +130,28 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            transition: background 0.2s;
         }
 
         #start-btn:hover {
             background: #2980b9;
         }
 
-        /* START MENU ANIMACJA */
+        /* MENU START */
         #start-menu {
             position: fixed;
-            bottom: 45px;
+            bottom: 50px;
             left: 10px;
-            width: 300px;
-            height: 400px;
+            width: 400px;
             background: rgba(20, 20, 20, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 10px;
             border: 1px solid rgba(255,255,255,0.1);
-            z-index: 999;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 10px;
             padding: 20px;
+            box-sizing: border-box;
             color: white;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .active-start #start-menu {
@@ -136,14 +163,139 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        .start-apps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .start-app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .start-app:hover { background: rgba(255,255,255,0.1); }
+        .start-app i { font-size: 24px; }
+        .start-app span { font-size: 11px; }
+
+        .start-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .power-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .power-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .power-menu {
+            position: absolute;
+            bottom: 40px;
+            right: 0;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 5px;
+            width: 150px;
+            display: none;
+            flex-direction: column;
+            z-index: 3000;
+        }
+
+        .power-menu button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .power-menu button:hover { background: #333; }
+
+        /* QUICK SETTINGS (WIN 11 STYLE) */
+        #quick-settings {
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            width: 350px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: white;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .qs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .qs-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .qs-item.active { background: #3498db; }
+        .qs-item:hover:not(.active) { background: rgba(255,255,255,0.1); }
+
+        .qs-slider {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qs-slider input {
+            flex: 1;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-
-    <!-- SZTUCZNY KURSOR DO ANIMACJI -->
     <div id="fake-cursor">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-            <path d="M7 2l12 11.2-5.8.8 3.3 5.4-1.8 1.1-3.4-5.5L7 19V2z" stroke="black" stroke-width="1.5"/>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0L16 11L9.5 12.5L14 19L11 21L6.5 14.5L0 18V0Z" fill="white"/>
+            <path d="M1 2V15.5L6 12.5L10.5 19L12.5 18L8 11.5L14.5 10L1 2Z" fill="black"/>
         </svg>
     </div>
 
@@ -153,76 +305,202 @@
             <div class="icon-img">📝</div>
             <div class="icon-text">Notatnik</div>
         </div>
-        <div class="icon" onclick="alert('Otwieranie Ustawień...')">
+        <div class="icon" onclick="window.location.href='ustawienia.html'">
             <div class="icon-img">⚙️</div>
             <div class="icon-text">Ustawienia</div>
         </div>
         <div class="icon" onclick="alert('Otwieranie XimiVast...')">
-            <div class="icon-img">🚀</div>
+            <div class="icon-img">🛡️</div>
             <div class="icon-text">XimiVast</div>
+        </div>
+        <div class="icon" onclick="window.location.href='browser.html'">
+            <div class="icon-img">🌐</div>
+            <div class="icon-text">Przeglądarka Ximi</div>
         </div>
     </div>
 
     <!-- MENU START -->
     <div id="start-menu">
-        <h3>Menu Start</h3>
-        <hr style="opacity: 0.2">
-        <p>Witaj w BootOS!</p>
+        <h3 style="font-weight: 300; margin-top: 0;">Przypięte</h3>
+        <div class="start-apps">
+            <div class="start-app" onclick="window.location.href='browser.html'">
+                <span>🌐</span>
+                <span>Przeglądarka</span>
+            </div>
+            <div class="start-app" onclick="window.location.href='ustawienia.html'">
+                <span>⚙️</span>
+                <span>Ustawienia</span>
+            </div>
+            <div class="start-app" onclick="alert('Otwieranie Notatnika...')">
+                <span>📝</span>
+                <span>Notatnik</span>
+            </div>
+            <div class="start-app" onclick="alert('Otwieranie XimiVast...')">
+                <span>🛡️</span>
+                <span>XimiVast</span>
+            </div>
+        </div>
+
+        <div class="start-footer">
+            <div class="user-info">
+                <div style="width: 32px; height: 32px; background: #555; border-radius: 50%; display: flex; justify-content: center; align-items: center;">👤</div>
+                <span id="start-username">Użytkownik</span>
+            </div>
+            <div class="power-btn" onclick="togglePowerMenu()">
+                ⏻
+                <div id="power-menu" class="power-menu">
+                    <button onclick="shutdownPC()">Zamknij</button>
+                    <button onclick="restartPC()">Uruchom ponownie</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK SETTINGS -->
+    <div id="quick-settings">
+        <div class="qs-grid">
+            <div class="qs-item active"><span>📶</span><span>WiFi</span></div>
+            <div class="qs-item"><span>🦷</span><span>Bluetooth</span></div>
+            <div class="qs-item"><span>✈️</span><span>Samolot</span></div>
+            <div class="qs-item"><span>🌙</span><span>Nocny</span></div>
+            <div class="qs-item"><span>📍</span><span>Lokalizacja</span></div>
+            <div class="qs-item"><span>🔋</span><span>Oszczędzanie</span></div>
+        </div>
+        <div class="qs-slider">
+            <span>☀️</span>
+            <input type="range" value="80">
+        </div>
+        <div class="qs-slider">
+            <span>🔊</span>
+            <input type="range" value="50">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            <span style="font-size: 12px; color: #aaa;">Bateria: 85%</span>
+            <span style="cursor: pointer;" onclick="window.location.href='ustawienia.html'">⚙️</span>
+        </div>
     </div>
 
     <!-- PASEK ZADAŃ -->
     <div id="taskbar">
-        <button id="start-btn">
-            <span>💠</span> Start
-        </button>
+        <div class="taskbar-left">
+            <button id="start-btn" onclick="toggleStart()">
+                <span>💠</span> Start
+            </button>
+        </div>
+        <div class="taskbar-right" onclick="toggleQuickSettings()">
+            <span>📶</span>
+            <span>🔊</span>
+            <div id="clock-taskbar" style="text-align: right; margin-left: 5px;">
+                <div id="tb-time" style="font-size: 12px;">12:00</div>
+                <div id="tb-date" style="font-size: 10px;">28.03.2026</div>
+            </div>
+        </div>
     </div>
 
+    <!-- RESTART OVERLAY -->
+    <div id="restart-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white;">
+        <div style="width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 20px; font-weight: 300;">Uruchamianie ponownie</p>
+    </div>
+
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
     <script>
+        const savedUser = localStorage.getItem('bootos_user') || 'Użytkownik';
+        const savedWallpaper = localStorage.getItem('bootos_wallpaper') || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80';
+        
+        document.body.style.backgroundImage = `url('${savedWallpaper}')`;
+        document.getElementById('start-username').innerText = savedUser;
+
+        function updateTaskbarClock() {
+            const now = new Date();
+            document.getElementById('tb-time').innerText = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('tb-date').innerText = now.toLocaleDateString('pl-PL');
+        }
+
+        function toggleStart() {
+            document.body.classList.toggle('active-start');
+            document.getElementById('quick-settings').style.display = 'none';
+        }
+
+        function toggleQuickSettings() {
+            const qs = document.getElementById('quick-settings');
+            qs.style.display = qs.style.display === 'block' ? 'none' : 'block';
+            document.body.classList.remove('active-start');
+        }
+
+        function togglePowerMenu() {
+            const pm = document.getElementById('power-menu');
+            pm.style.display = pm.style.display === 'flex' ? 'none' : 'flex';
+            event.stopPropagation();
+        }
+
+        function restartPC() {
+            document.getElementById('restart-overlay').querySelector('p').innerText = 'Uruchamianie ponownie';
+            document.getElementById('restart-overlay').style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = "ekranblokady.html";
+            }, 3000);
+        }
+
+        function shutdownPC() {
+            document.getElementById('restart-overlay').querySelector('p').innerText = 'Zamykanie...';
+            document.getElementById('restart-overlay').style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 3000);
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('#start-btn') && !event.target.closest('#start-menu')) {
+                document.body.classList.remove('active-start');
+            }
+            if (!event.target.closest('.taskbar-right') && !event.target.closest('#quick-settings')) {
+                document.getElementById('quick-settings').style.display = 'none';
+            }
+            if (!event.target.closest('.power-btn')) {
+                document.getElementById('power-menu').style.display = 'none';
+            }
+        }
+
         function runCinematicAnimation() {
             const cursor = document.getElementById('fake-cursor');
             const taskbar = document.getElementById('taskbar');
             const desktop = document.getElementById('desktop');
             const startBtn = document.getElementById('start-btn');
 
-            // 1. Pokaż kursor na środku
             cursor.style.display = 'block';
             cursor.style.left = '50%';
             cursor.style.top = '50%';
 
-            // 2. Po 1s wjedź paskiem zadań i pokaż pulpit
             setTimeout(() => {
                 taskbar.style.transform = 'translateY(0)';
                 desktop.style.opacity = '1';
 
-                // 3. Przesuń kursor do przycisku START
                 setTimeout(() => {
                     const rect = startBtn.getBoundingClientRect();
                     cursor.style.transition = 'all 1.5s ease-in-out';
                     cursor.style.left = (rect.left + 15) + 'px';
                     cursor.style.top = (rect.top + 15) + 'px';
 
-                    // 4. "Kliknij" przycisk START
                     setTimeout(() => {
-                        document.body.classList.add('active-start');
+                        toggleStart();
                         
-                        // 5. Zniknij kursor i oddaj kontrolę użytkownikowi
                         setTimeout(() => {
                             cursor.style.display = 'none';
-                            // Pozwól zamykać menu start
-                            document.addEventListener('click', (e) => {
-                                if (!startBtn.contains(e.target)) {
-                                    document.body.classList.remove('active-start');
-                                } else {
-                                    document.body.classList.toggle('active-start');
-                                }
-                            });
                         }, 500);
                     }, 1600);
                 }, 1000);
             }, 1000);
         }
 
-        window.onload = runCinematicAnimation;
+        window.onload = () => {
+            runCinematicAnimation();
+            updateTaskbarClock();
+            setInterval(updateTaskbarClock, 1000);
+        };
     </script>
 </body>
 </html>
