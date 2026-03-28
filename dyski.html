@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Zarządzanie Dyskami</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .toolbar {
+            background-color: #ecf0f1;
+            padding: 10px 20px;
+            border-bottom: 1px solid #bdc3c7;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: 1px solid #bdc3c7;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #e1e1e1;
+        }
+
+        .btn:disabled {
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .btn.format-btn {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .btn.format-btn:hover:not(:disabled) {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .disk-item {
+            width: 300px;
+            background: white;
+            border: 2px solid transparent;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .disk-item:hover {
+            transform: translateY(-5px);
+            border-color: #3498db;
+        }
+
+        .disk-item.selected {
+            border-color: #3498db;
+            background-color: #ebf5fb;
+        }
+
+        .disk-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .disk-info {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 95%;
+            background: #e74c3c; /* Czerwony pasek na początku */
+            transition: width 1s ease, background-color 0.5s;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Modal formatowania */
+        #format-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span>BootOS - Mój Komputer</span>
+        <span id="user-display">Użytkownik</span>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn" onclick="location.reload()">Odśwież</button>
+        <button id="btn-format" class="btn format-btn" disabled onclick="startFormat()">Formatuj</button>
+        <button class="btn" onclick="location.href='login.html'">Wyloguj</button>
+    </div>
+
+    <div class="container">
+        <h3>Dyski i partycje</h3>
+        
+        <div id="disk-c" class="disk-item" onclick="selectDisk()">
+            <div class="disk-icon">💽</div>
+            <div class="disk-info"><strong>Dysk Lokalny (C:)</strong></div>
+            <div class="progress-container">
+                <div id="c-progress" class="progress-bar"></div>
+            </div>
+            <div id="c-status" class="status-text">95% zajęte (10 GB wolnych z 200 GB)</div>
+        </div>
+    </div>
+
+    <div id="format-overlay">
+        <div>
+            <h2>Formatowanie dysku C:...</h2>
+            <p>Proszę czekać, usuwanie danych...</p>
+            <div class="progress-container" style="width: 400px; margin: 20px auto;">
+                <div id="format-progress" class="progress-bar" style="width: 0%; background-color: #3498db;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pobierz nazwę użytkownika z parametrów URL (opcjonalnie)
+        const urlParams = new URLSearchParams(window.location.search);
+        const user = urlParams.get('user') || 'Użytkownik';
+        document.getElementById('user-display').innerText = user;
+
+        let isSelected = false;
+
+        function selectDisk() {
+            const disk = document.getElementById('disk-c');
+            const formatBtn = document.getElementById('btn-format');
+            
+            isSelected = !isSelected;
+            
+            if (isSelected) {
+                disk.classList.add('selected');
+                formatBtn.disabled = false;
+            } else {
+                disk.classList.remove('selected');
+                formatBtn.disabled = true;
+            }
+        }
+
+        function startFormat() {
+            if (!confirm('OSTRZEŻENIE: Formatowanie usunie wszystkie dane z dysku C. Czy na pewno chcesz kontynuować?')) {
+                return;
+            }
+
+            const overlay = document.getElementById('format-overlay');
+            const formatBar = document.getElementById('format-progress');
+            const cBar = document.getElementById('c-progress');
+            const cStatus = document.getElementById('c-status');
+            
+            overlay.style.display = 'flex';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                formatBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        // Zaktualizuj wygląd dysku po formacie
+                        cBar.style.width = '2%';
+                        cBar.style.backgroundColor = '#2ecc71'; // Zmienia na zielony
+                        cStatus.innerText = '2% zajęte (196 GB wolnych z 200 GB)';
+                        alert('Formatowanie zakończone sukcesem!');
+                    }, 500);
+                }
+            }, 50);
+        }
+    </script>
+</body>
+</html>
