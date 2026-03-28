@@ -659,11 +659,32 @@
                         <h3 style="color: #27c93f;">Cloud Connected</h3>
                         <p>All your files are safely backed up in the cloud.</p>
                         <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0;">
-                            <div style="width: 15%; height: 100%; background: #27c93f; border-radius: 4px;"></div>
+                            <div id="cloud-progress" style="width: 15%; height: 100%; background: #27c93f; border-radius: 4px; transition: 0.5s;"></div>
                         </div>
-                        <p style="font-size: 12px; color: #aaa;">1.5 GB of 10 GB used</p>
+                        <p style="font-size: 12px; color: #aaa;" id="cloud-usage-text">1.5 GB of 10 GB used</p>
                     </div>
-                    <button class="store-btn" style="width: auto; padding: 8px 20px;">Sync Now</button>
+                    <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="showCloudPlans()">Sync Now / Upgrade</button>
+                    
+                    <div id="cloud-plans" style="display: none; margin-top: 20px;">
+                        <h3>Upgrade Storage</h3>
+                        <div class="settings-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(500, 50)">
+                                <b>500 GB</b><br><span style="color: #27c93f;">50 ZŁ</span>
+                            </div>
+                            <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(1000, 100)">
+                                <b>1 TB</b><br><span style="color: #27c93f;">100 ZŁ</span>
+                            </div>
+                            <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(2000, 200)">
+                                <b>2 TB</b><br><span style="color: #27c93f;">200 ZŁ</span>
+                            </div>
+                            <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(3000, 300)">
+                                <b>3 TB</b><br><span style="color: #27c93f;">300 ZŁ</span>
+                            </div>
+                            <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(4000, 4)">
+                                <b>4 TB</b><br><span style="color: #27c93f;">4 ZŁ</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- UPDATES SECTION -->
@@ -844,6 +865,25 @@
                 document.body.style.background = `url('${url}') center/cover no-repeat`;
                 localStorage.setItem('bootos_wallpaper', url);
                 alert('Wallpaper updated!');
+            }
+        }
+
+        function showCloudPlans() {
+            const plans = document.getElementById('cloud-plans');
+            plans.style.display = plans.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function upgradeCloud(sizeGB, price) {
+            if(confirm(`Do you want to upgrade to ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'} for ${price} ZŁ?`)) {
+                const totalSize = sizeGB;
+                const used = 1.5;
+                const percent = (used / totalSize) * 100;
+                
+                document.getElementById('cloud-progress').style.width = percent + '%';
+                document.getElementById('cloud-usage-text').innerText = `${used} GB of ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'} used`;
+                
+                alert(`Successfully upgraded to ${sizeGB >= 1000 ? (sizeGB/1000)+' TB' : sizeGB+' GB'}!`);
+                document.getElementById('cloud-plans').style.display = 'none';
             }
         }
 
