@@ -282,7 +282,7 @@
 
     <div class="container">
         <h3>Krok 3: Wybór i przygotowanie partycji</h3>
-        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Wybierz dysk, sformatuj go, a następnie ustaw jako docelowy dla systemu BootOS.</p>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Wybierz dysk (min. 30 GB), sformatuj go, a następnie ustaw jako docelowy dla systemu BootOS (waga systemu: 5 GB).</p>
         
         <div id="disk-list" style="display: flex; gap: 20px; flex-wrap: wrap;">
             <div id="disk-c" class="disk-item" onclick="selectDisk('disk-c')">
@@ -314,7 +314,8 @@
             </div>
             <div class="input-group">
                 <label>Rozmiar (GB):</label>
-                <input type="number" id="part-size" value="100" min="1" max="190">
+                <input type="number" id="part-size" value="50" min="1">
+                <small id="space-info" style="color: #aaa; font-size: 11px;">Dostępne: 200 GB</small>
             </div>
             <div class="modal-btns">
                 <button class="btn-confirm" onclick="confirmSplit()">Utwórz</button>
@@ -365,9 +366,12 @@
         document.getElementById('user-display').innerText = user;
 
         let selectedDiskId = null;
-        let isSplit = false;
-        let formattedDisks = new Set();
+        let formattedDisks = new Map(); // Map: ID -> { formatted: bool, size: number }
         let installTargetId = null;
+        let availableSpaceOnC = 200;
+
+        // Inicjalizacja dysku C
+        formattedDisks.set('disk-c', { formatted: false, size: 200 });
 
         function selectDisk(id) {
             const disks = document.querySelectorAll('.disk-item');
@@ -386,33 +390,45 @@
                 selectedDiskId = id;
                 document.getElementById(id).classList.add('selected');
                 formatBtn.disabled = false;
-                splitBtn.disabled = (id !== 'disk-c' || isSplit);
+                
+                // Można dzielić tylko dysk C i jeśli jest miejsce (> 5GB zostawiamy na C)
+                splitBtn.disabled = (id !== 'disk-c' || availableSpaceOnC <= 10);
+                
                 // Pozwól wybrać jako docelowy tylko jeśli sformatowany
-                installBtn.disabled = !formattedDisks.has(id);
+                const diskData = formattedDisks.get(id);
+                installBtn.disabled = !diskData || !diskData.formatted;
             }
             updateNextButton();
         }
 
         function setAsInstallTarget() {
-            if (!selectedDiskId || !formattedDisks.has(selectedDiskId)) return;
+            const diskData = formattedDisks.get(selectedDiskId);
+            if (!selectedDiskId || !diskData || !diskData.formatted) return;
             
+            // Wymóg: system waży 5GB, ale potrzebuje 30GB dla płynnego działania
+            if (diskData.size < 30) {
+                alert('BŁĄD: Wybrana partycja jest za mała! Chociaż BootOS waży 5 GB, zalecamy co najmniej 30 GB miejsca, aby system się nie zacinał.');
+                return;
+            }
+
             const disks = document.querySelectorAll('.disk-item');
             disks.forEach(d => d.classList.remove('installed-target'));
             
             installTargetId = selectedDiskId;
             document.getElementById(installTargetId).classList.add('installed-target');
             updateNextButton();
-            alert(`Dysk ${document.getElementById(installTargetId).querySelector('strong').innerText} został wybrany jako docelowy.`);
+            alert(`Dysk został wybrany jako docelowy dla systemu.`);
         }
 
         function updateNextButton() {
             const nextBtn = document.getElementById('btn-next-step');
-            // Przycisk Dalej jest aktywny tylko jeśli mamy wybrany i sformatowany dysk docelowy
             nextBtn.disabled = !installTargetId;
         }
 
         function splitDisk() {
-            if (isSplit) return;
+            // Pokazujemy ile miejsca zostało na C
+            document.getElementById('space-info').innerText = `Dostępne: ${availableSpaceOnC - 5} GB (zostawiając 5GB dla C:)`;
+            document.getElementById('part-size').max = availableSpaceOnC - 5;
             document.getElementById('partition-overlay').style.display = 'flex';
         }
 
@@ -421,21 +437,30 @@
             const letter = document.getElementById('part-letter').value;
             const size = parseInt(document.getElementById('part-size').value);
 
-            if (size < 1 || size > 190) {
-                alert('Rozmiar musi być między 1 a 190 GB.');
+            if (isNaN(size) || size < 1 || size > (availableSpaceOnC - 5)) {
+                alert(`Rozmiar musi być między 1 a ${availableSpaceOnC - 5} GB.`);
                 return;
             }
 
-            const diskList = document.getElementById('disk-list');
-            const cStatus = document.getElementById('c-status');
-            
-            isSplit = true;
+            // Sprawdź czy litera już istnieje
+            const diskId = 'disk-' + letter.toLowerCase();
+            if (document.getElementById(diskId)) {
+                alert(`Litera ${letter}: jest już zajęta!`);
+                return;
+            }
+
             document.getElementById('partition-overlay').style.display = 'none';
 
-            const remainingSize = 200 - size;
-            cStatus.innerText = `95% zajęte (wolne miejsce na ${remainingSize} GB)`;
+            // Zmniejsz miejsce na C
+            availableSpaceOnC -= size;
+            formattedDisks.get('disk-c').size = availableSpaceOnC;
             
-            const diskId = 'disk-' + letter.toLowerCase();
+            // Aktualizacja widoku dysku C
+            const cStatus = document.getElementById('c-status');
+            cStatus.innerText = `95% zajęte (wolne miejsce na ${availableSpaceOnC} GB)`;
+            
+            // Dodanie nowego dysku
+            const diskList = document.getElementById('disk-list');
             const newDisk = document.createElement('div');
             newDisk.id = diskId;
             newDisk.className = 'disk-item';
@@ -450,9 +475,15 @@
             `;
             
             diskList.appendChild(newDisk);
-            document.getElementById('btn-split').disabled = true;
-            // Nowo utworzony dysk (jeśli sformatowany przez system przy tworzeniu - tu dla uproszczenia nie)
-            // formattedDisks.add(diskId); 
+            
+            // Dodaj do mapy sformatowanych dysków (nowy dysk nie jest sformatowany na start)
+            formattedDisks.set(diskId, { formatted: false, size: size });
+            
+            // Jeśli na C zostało mało miejsca, zablokuj przycisk podziału
+            if (availableSpaceOnC <= 10) {
+                document.getElementById('btn-split').disabled = true;
+            }
+
             alert(`Pomyślnie utworzono partycję ${letter}: (${name}) o rozmiarze ${size} GB.`);
         }
 
@@ -460,6 +491,7 @@
             if (!selectedDiskId) return;
             const diskElement = document.getElementById(selectedDiskId);
             const diskLabel = diskElement.querySelector('strong').innerText;
+            const diskData = formattedDisks.get(selectedDiskId);
             
             if (!confirm(`OSTRZEŻENIE: Formatowanie usunie wszystkie dane z ${diskLabel}. Kontynuować?`)) {
                 return;
@@ -484,19 +516,12 @@
                         const bar = diskElement.querySelector('.progress-bar');
                         const status = diskElement.querySelector('.status-text');
                         
-                        let totalSize = "100 GB";
-                        if (selectedDiskId === 'disk-c') {
-                            totalSize = isSplit ? (200 - parseInt(document.getElementById('part-size').value)) + " GB" : "200 GB";
-                        } else {
-                            totalSize = document.getElementById('part-size').value + " GB";
-                        }
-
                         bar.style.width = '2%';
                         bar.style.backgroundColor = '#2ecc71';
-                        status.innerText = `2% zajęte (${totalSize} wolnych)`;
+                        status.innerText = `2% zajęte (${diskData.size} GB wolnych)`;
                         
-                        // Oznacz dysk jako sformatowany
-                        formattedDisks.add(selectedDiskId);
+                        // Oznacz dysk jako sformatowany w Mapie
+                        diskData.formatted = true;
                         document.getElementById('btn-install').disabled = false;
                         
                         alert(`Formatowanie ${diskLabel} zakończone!`);
