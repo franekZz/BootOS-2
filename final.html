@@ -242,9 +242,11 @@
             startSequence();
         };
 
-        window.onkeydown = () => {
+        window.onkeydown = (e) => {
             if (document.getElementById('lock-screen').style.display === 'block') {
-                alert("Instalacja ukończona! To Twój nowy system BootOS.");
+                if (e.key === "Enter") {
+                    window.location.href = "pulpit.html";
+                }
             }
         };
     </script>
