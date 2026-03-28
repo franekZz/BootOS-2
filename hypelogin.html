@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootHypeOS - Hype Login</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        #animation-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(2px);
+            animation: float 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+
+        .hype-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 350px;
+            text-align: center;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+            position: relative;
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #9b59b6;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 5px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            margin-top: 5px;
+        }
+
+        .hype-btn {
+            width: 100%;
+            padding: 12px;
+            background: #9b59b6;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .hype-btn:hover {
+            background: #8e44ad;
+            box-shadow: 0 0 15px rgba(155, 89, 182, 0.4);
+        }
+
+        .secondary-links {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .link:hover {
+            color: white;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #111;
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .yes-btn { background: #e74c3c; color: white; }
+        .no-btn { background: #333; color: white; }
+    </style>
+</head>
+<body>
+    <div id="animation-background"></div>
+
+    <div class="hype-box">
+        <div class="logo">H</div>
+        <h2>Login to HypeAccount</h2>
+        
+        <div class="input-group">
+            <input type="text" id="email-input" placeholder="Email or Login">
+        </div>
+        <div class="input-group">
+            <input type="password" id="pass-input" placeholder="Password">
+        </div>
+
+        <button class="hype-btn" onclick="goToDesktop()">Login</button>
+
+        <div class="secondary-links">
+            <span class="link" onclick="createAccount()">Create account</span>
+            <span class="link" onclick="forgotPassword()">Forgot password</span>
+            <span class="link" onclick="showSkipModal()">Skip</span>
+        </div>
+    </div>
+
+    <div id="skipModal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to skip? You will lose Hype features.</p>
+            <div class="modal-btns">
+                <button class="modal-btn yes-btn" onclick="goToDesktop(false)">Yes</button>
+                <button class="modal-btn no-btn" onclick="hideSkipModal()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const savedUser = localStorage.getItem('bootos_user') || 'User';
+
+        function createAccount() {
+            const hypeEmail = `${savedUser.toLowerCase()}@hype.os`;
+            alert(`Account created successfully!\nYour Hype Email: ${hypeEmail}`);
+            document.getElementById('email-input').value = hypeEmail;
+            localStorage.setItem('bootos_hype_email', hypeEmail);
+            localStorage.setItem('bootos_hype_active', 'true');
+        }
+
+        function forgotPassword() {
+            const email = document.getElementById('email-input').value;
+            if (email) {
+                alert(`Password reset link sent to: ${email}`);
+            } else {
+                alert('Please enter your email first.');
+            }
+        }
+
+        function showSkipModal() {
+            document.getElementById('skipModal').style.display = 'flex';
+        }
+
+        function hideSkipModal() {
+            document.getElementById('skipModal').style.display = 'none';
+        }
+
+        function goToDesktop(isHype = true) {
+            if (isHype) {
+                localStorage.setItem('bootos_hype_active', 'true');
+            } else {
+                localStorage.setItem('bootos_hype_active', 'false');
+            }
+            window.location.href = "pulpit.html";
+        }
+
+        function createBubbles() {
+            const screen = document.getElementById('animation-background');
+            const colors = ['#9b59b6', '#3498db', '#8e44ad', '#2980b9'];
+            
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                const size = Math.random() * 60 + 20 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
+                
+                screen.appendChild(bubble);
+            }
+        }
+
+        window.onload = createBubbles;
+    </script>
+</body>
+</html>
