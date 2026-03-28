@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootHypeOS - Desktop</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            color: white;
+        }
+
+        /* BUBBLES ANIMATION */
+        .bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: rise 10s infinite ease-in;
+        }
+
+        @keyframes rise {
+            0% { bottom: -100px; transform: translateX(0); }
+            50% { transform: translateX(100px); }
+            100% { bottom: 1080px; transform: translateX(-200px); }
+        }
+
+        /* DESKTOP */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+
+        .icon {
+            width: 90px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            position: absolute;
+            user-select: none;
+            padding: 5px;
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        .icon.selected {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .icon-img {
+            font-size: 45px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .icon-text {
+            font-size: 13px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* SELECTION BOX */
+        #selection-box {
+            position: fixed;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            display: none;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        /* TASKBAR */
+        #taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(25px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+            z-index: 1000;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .taskbar-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .tb-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .tb-icon:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .taskbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        .taskbar-right:hover { background: rgba(255,255,255,0.1); }
+
+        /* START MENU */
+        #start-menu {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            width: 550px;
+            height: 600px;
+            background: rgba(25, 25, 35, 0.85);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-sizing: border-box;
+            display: none;
+            z-index: 2000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+            opacity: 0;
+        }
+
+        #start-menu.active {
+            display: block;
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .start-search {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: white;
+            outline: none;
+            margin-bottom: 30px;
+        }
+
+        .start-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+        }
+
+        .start-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .start-item:hover { background: rgba(255,255,255,0.1); }
+        .start-item span:first-child { font-size: 30px; }
+        .start-item span:last-child { font-size: 11px; }
+
+        .start-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+
+        /* WINDOWS */
+        .window {
+            position: fixed;
+            background: rgba(30, 30, 45, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            min-width: 500px;
+            min-height: 400px;
+            display: none;
+            flex-direction: column;
+            z-index: 4000;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+            overflow: hidden;
+        }
+
+        .window-header {
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .window-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .window-controls { display: flex; gap: 8px; }
+        .win-btn { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: none; transition: 0.2s; }
+        .win-close { background: #ff5f56; }
+        .win-close:hover { background: #ff3b30; }
+        .win-min { background: #ffbd2e; }
+        .win-max { background: #27c93f; }
+
+        .window-content { flex: 1; padding: 20px; overflow: auto; }
+
+        /* HYPE AI STYLE */
+        .ai-chat { display: flex; flex-direction: column; height: 100%; }
+        .ai-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .msg.bot { background: rgba(118, 75, 162, 0.4); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg.user { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai-input-area { display: flex; gap: 10px; }
+        .ai-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; color: white; outline: none; }
+        .ai-send { background: #764ba2; border: none; color: white; padding: 0 20px; border-radius: 10px; cursor: pointer; }
+
+        /* HYPE STORE STYLE */
+        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+        .store-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; text-align: center; transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .store-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+        .store-card span { font-size: 40px; display: block; margin-bottom: 10px; }
+        .store-btn { background: #764ba2; border: none; color: white; padding: 8px 15px; border-radius: 8px; margin-top: 10px; width: 100%; cursor: pointer; }
+
+        /* EXPLORER STYLE */
+        .explorer-container { display: flex; height: 100%; gap: 20px; }
+        .explorer-sidebar { width: 160px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 15px; }
+        .sidebar-item { padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.1); }
+        .sidebar-item.active { background: rgba(118, 75, 162, 0.3); }
+        .explorer-main { flex: 1; }
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 20px; }
+        .file-item { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .file-item:hover { background: rgba(255,255,255,0.1); }
+        .file-item span:first-child { font-size: 35px; }
+        .file-item span:last-child { font-size: 12px; text-align: center; }
+
+        /* HYPEFIX OVERLAY */
+        #hypefix-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 100000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .fix-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid #764ba2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .progress-container { width: 400px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 20px; }
+        #progress-bar { width: 0%; height: 100%; background: #764ba2; transition: width 0.1s linear; }
+
+        /* CONTEXT MENU */
+        #context-menu {
+            position: fixed;
+            background: rgba(25, 25, 35, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            width: 200px;
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            z-index: 5000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .cm-item { padding: 10px 15px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+        .cm-item:hover { background: rgba(255,255,255,0.1); }
+        .cm-separator { height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0; }
+    </style>
+</head>
+<body oncontextmenu="showContextMenu(event)">
+    <div class="bubbles" id="bubble-container"></div>
+
+    <!-- DESKTOP -->
+    <div id="desktop" onmousedown="startSelection(event)">
+        <div class="icon" style="top: 30px; left: 30px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('explorer')">
+            <div class="icon-img">📁</div>
+            <div class="icon-text">Explorer</div>
+        </div>
+        <div class="icon" style="top: 30px; left: 140px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('ai')">
+            <div class="icon-img">🤖</div>
+            <div class="icon-text">HypeAI</div>
+        </div>
+        <div class="icon" style="top: 30px; left: 250px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('store')">
+            <div class="icon-img">🛍️</div>
+            <div class="icon-text">HypeStore</div>
+        </div>
+        <div class="icon" style="top: 150px; left: 30px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('settings')">
+            <div class="icon-img">⚙️</div>
+            <div class="icon-text">Settings</div>
+        </div>
+        <div class="icon" style="top: 150px; left: 140px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('trash')">
+            <div class="icon-img">🗑️</div>
+            <div class="icon-text">Trash</div>
+        </div>
+    </div>
+
+    <div id="selection-box"></div>
+
+    <!-- TASKBAR -->
+    <div id="taskbar">
+        <div class="taskbar-left">
+            <div class="tb-icon" onclick="toggleStart()">💠</div>
+        </div>
+        <div class="taskbar-center">
+            <div class="tb-icon" onclick="openApp('explorer')">📁</div>
+            <div class="tb-icon" onclick="openApp('ai')">🤖</div>
+            <div class="tb-icon" onclick="openApp('store')">🛍️</div>
+            <div class="tb-icon" onclick="openApp('settings')">⚙️</div>
+        </div>
+        <div class="taskbar-right">
+            <span id="tb-time">12:00 PM</span>
+            <span id="tb-date">28.03.2026</span>
+        </div>
+    </div>
+
+    <!-- START MENU -->
+    <div id="start-menu">
+        <input type="text" class="start-search" placeholder="Type here to search...">
+        <div class="start-grid">
+            <div class="start-item" onclick="openApp('explorer')"><span>📁</span><span>Explorer</span></div>
+            <div class="start-item" onclick="openApp('ai')"><span>🤖</span><span>HypeAI</span></div>
+            <div class="start-item" onclick="openApp('store')"><span>🛍️</span><span>Store</span></div>
+            <div class="start-item" onclick="openApp('settings')"><span>⚙️</span><span>Settings</span></div>
+            <div class="start-item"><span>📝</span><span>Notes</span></div>
+            <div class="start-item"><span>🎨</span><span>Paint</span></div>
+            <div class="start-item"><span>🎵</span><span>Music</span></div>
+            <div class="start-item"><span>🎮</span><span>Games</span></div>
+        </div>
+        <div class="start-footer">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; background: #764ba2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">👤</div>
+                <span id="username-display">Hype User</span>
+            </div>
+            <div style="cursor: pointer; font-size: 20px;" onclick="location.href='index.html'">⏻</div>
+        </div>
+    </div>
+
+    <!-- WINDOWS -->
+    <!-- HYPE AI -->
+    <div id="win-ai" class="window" style="top: 100px; left: 100px; width: 600px; height: 500px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-ai')">
+            <div class="window-title">🤖 HypeAI Assistant</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('ai')"></button>
+            </div>
+        </div>
+        <div class="window-content ai-chat">
+            <div class="ai-messages" id="ai-messages">
+                <div class="msg bot">Hello! I am HypeAI. How can I assist you in BootHypeOS today?</div>
+            </div>
+            <div class="ai-input-area">
+                <input type="text" class="ai-input" id="ai-input" placeholder="Ask HypeAI something..." onkeydown="if(event.key==='Enter') sendAI()">
+                <button class="ai-send" onclick="sendAI()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HYPE STORE -->
+    <div id="win-store" class="window" style="top: 120px; left: 120px; width: 700px; height: 550px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-store')">
+            <div class="window-title">🛍️ HypeStore</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('store')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <h2 style="margin-top:0; font-weight: 300;">Discover Apps</h2>
+            <div class="store-grid">
+                <div class="store-card">
+                    <span>🎮</span>
+                    <b>HypeGame</b>
+                    <button class="store-btn" onclick="installAppInStore(this, 'HypeGame', '🎮')">Install</button>
+                </div>
+                <div class="store-card">
+                    <span>🎵</span>
+                    <b>HypeMusic</b>
+                    <button class="store-btn" onclick="installAppInStore(this, 'HypeMusic', '🎵')">Install</button>
+                </div>
+                <div class="store-card">
+                    <span>📊</span>
+                    <b>HypeOffice</b>
+                    <button class="store-btn" onclick="installAppInStore(this, 'HypeOffice', '📊')">Install</button>
+                </div>
+                <div class="store-card">
+                    <span>🛡️</span>
+                    <b>HypeVast</b>
+                    <button class="store-btn" onclick="installAppInStore(this, 'HypeVast', '🛡️')">Install</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPLORER -->
+    <div id="win-explorer" class="window" style="top: 150px; left: 150px; width: 750px; height: 500px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-explorer')">
+            <div class="window-title">📁 File Explorer</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('explorer')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="explorer-container">
+                <div class="explorer-sidebar">
+                    <div class="sidebar-item active" onclick="showDiskC()">💽 Local Disk (C:)</div>
+                    <div class="sidebar-item">☁️ HypeCloud</div>
+                    <div class="sidebar-item">📂 Documents</div>
+                    <div class="sidebar-item">🖼️ Pictures</div>
+                </div>
+                <div class="explorer-main">
+                    <div class="file-grid" id="file-grid">
+                        <!-- Files populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="win-settings" class="window" style="top: 180px; left: 180px; width: 650px; height: 500px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-settings')">
+            <div class="window-title">⚙️ Settings</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('settings')"></button>
+            </div>
+        </div>
+        <div class="window-content" style="display: flex; gap: 0; padding: 0;">
+            <div style="width: 180px; background: rgba(0,0,0,0.2); padding: 20px; border-right: 1px solid rgba(255,255,255,0.05);">
+                <div class="sidebar-item active">System</div>
+                <div class="sidebar-item">Personalization</div>
+                <div class="sidebar-item">HypeAccount</div>
+                <div class="sidebar-item">Hyper Cloud</div>
+                <div class="sidebar-item">Updates</div>
+            </div>
+            <div style="flex: 1; padding: 30px;">
+                <h2 style="margin-top: 0; font-weight: 300;">System Information</h2>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <p><b>OS Name:</b> BootHypeOS</p>
+                    <p><b>Version:</b> 2026.1 (Hype Edition)</p>
+                    <p><b>Cloud:</b> <span style="color: #27c93f;">Connected to Hyper Cloud</span></p>
+                    <p><b>Storage:</b> 30GB (24GB Free)</p>
+                </div>
+                <button class="store-btn" style="margin-top: 20px; width: auto; padding: 10px 25px;" onclick="location.href='index.html'">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRASH -->
+    <div id="win-trash" class="window" style="top: 200px; left: 200px; width: 500px; height: 400px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-trash')">
+            <div class="window-title">🗑️ Trash</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('trash')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="file-grid" id="trash-grid">
+                <!-- Trash content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- HYPEFIX FACTORY RESET OVERLAY -->
+    <div id="hypefix-overlay">
+        <div class="fix-spinner"></div>
+        <h2 style="font-weight: 300; margin-bottom: 10px;">HypeFIX Factory Reset</h2>
+        <p style="color: #aaa; margin-bottom: 30px;">System critical files missing. Repairing installation...</p>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="fix-status">Initializing repair...</p>
+        <div id="cloud-info" style="margin-top: 40px; display: none; background: rgba(118, 75, 162, 0.2); padding: 20px; border-radius: 15px; border: 1px solid rgba(118, 75, 162, 0.4);">
+            <h3 style="color: #fff; margin-top: 0;">Hyper Cloud Protection</h3>
+            <p>Your data is safe! All personal files and settings are being restored from Hyper Cloud.</p>
+        </div>
+    </div>
+
+    <!-- CONTEXT MENU -->
+    <div id="context-menu">
+        <div class="cm-item" onclick="location.reload()">🔄 Refresh</div>
+        <div class="cm-separator"></div>
+        <div class="cm-item">📁 New Folder</div>
+        <div class="cm-item">📄 New Document</div>
+        <div class="cm-separator"></div>
+        <div class="cm-item" onclick="openApp('settings')">⚙️ Personalize</div>
+    </div>
+
+    <script>
+        // Init User Info
+        const savedUser = localStorage.getItem('bootos_user') || 'Hype User';
+        document.getElementById('username-display').innerText = savedUser;
+
+        // Create Bubbles
+        const container = document.getElementById('bubble-container');
+        for(let i=0; i<15; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.style.left = Math.random() * 100 + '%';
+            b.style.animationDelay = Math.random() * 10 + 's';
+            b.style.width = b.style.height = (Math.random() * 50 + 20) + 'px';
+            container.appendChild(b);
+        }
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('tb-time').innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('tb-date').innerText = now.toLocaleDateString('en-GB');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Start Menu Toggle
+        function toggleStart() {
+            const menu = document.getElementById('start-menu');
+            menu.classList.toggle('active');
+        }
+
+        // Window Management
+        function openApp(id) {
+            document.getElementById('win-' + id).style.display = 'flex';
+            document.getElementById('start-menu').classList.remove('active');
+        }
+        function closeApp(id) {
+            document.getElementById('win-' + id).style.display = 'none';
+        }
+
+        function dragWindow(e, id) {
+            const win = document.getElementById(id);
+            let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
+            document.onmousemove = (e) => {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                win.style.top = (win.offsetTop - pos2) + "px";
+                win.style.left = (win.offsetLeft - pos1) + "px";
+            };
+            document.onmouseup = () => {
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+        }
+
+        // Desktop Selection & Icon Drag
+        let selectionStartX, selectionStartY;
+        function startSelection(e) {
+            if (e.target.id !== 'desktop') return;
+            selectionStartX = e.clientX;
+            selectionStartY = e.clientY;
+            const box = document.getElementById('selection-box');
+            box.style.display = 'block';
+            box.style.width = '0px';
+            box.style.height = '0px';
+            
+            document.onmousemove = (e) => {
+                const width = Math.abs(e.clientX - selectionStartX);
+                const height = Math.abs(e.clientY - selectionStartY);
+                box.style.width = width + 'px';
+                box.style.height = height + 'px';
+                box.style.left = Math.min(e.clientX, selectionStartX) + 'px';
+                box.style.top = Math.min(e.clientY, selectionStartY) + 'px';
+                
+                // Selection logic
+                const boxRect = box.getBoundingClientRect();
+                document.querySelectorAll('.icon').forEach(icon => {
+                    const rect = icon.getBoundingClientRect();
+                    if (!(rect.right < boxRect.left || rect.left > boxRect.right || rect.bottom < boxRect.top || rect.top > boxRect.bottom)) {
+                        icon.classList.add('selected');
+                    } else {
+                        icon.classList.remove('selected');
+                    }
+                });
+            };
+            document.onmouseup = () => {
+                box.style.display = 'none';
+                document.onmousemove = null;
+            };
+        }
+
+        function dragIcon(e, el) {
+            e.stopPropagation();
+            document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
+            document.onmousemove = (e) => {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            };
+            document.onmouseup = () => {
+                document.onmousemove = null;
+            };
+        }
+
+        function installAppInStore(btn, name, icon) {
+            btn.disabled = true;
+            btn.innerText = "Installing...";
+            setTimeout(() => {
+                btn.innerText = "Installed";
+                btn.style.background = "#27c93f";
+                
+                // Add icon to desktop
+                const desktop = document.getElementById('desktop');
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'icon';
+                iconDiv.style.top = '270px';
+                iconDiv.style.left = (100 + (Math.random() * 200)) + 'px';
+                iconDiv.onmousedown = (e) => dragIcon(e, iconDiv);
+                iconDiv.innerHTML = `<div class="icon-img">${icon}</div><div class="icon-text">${name}</div>`;
+                iconDiv.ondblclick = () => alert(`Opening ${name}...`);
+                desktop.appendChild(iconDiv);
+            }, 3000);
+        }
+
+        // HypeAI Logic
+        function sendAI() {
+            const input = document.getElementById('ai-input');
+            const msgs = document.getElementById('ai-messages');
+            if(!input.value.trim()) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg user';
+            userMsg.innerText = input.value;
+            msgs.appendChild(userMsg);
+
+            const botMsg = document.createElement('div');
+            botMsg.className = 'msg bot';
+            botMsg.innerText = "...";
+            msgs.appendChild(botMsg);
+            
+            const text = input.value.toLowerCase();
+            input.value = '';
+            msgs.scrollTop = msgs.scrollHeight;
+
+            setTimeout(() => {
+                let response = "I'm not sure how to answer that yet, but I'm learning!";
+                if(text.includes('hello')) response = "Hello! I am your HypeAI assistant.";
+                else if(text.includes('system')) response = "BootHypeOS is the most advanced version of our operating system.";
+                else if(text.includes('cloud')) response = "Hyper Cloud is currently syncing your data safely.";
+                
+                botMsg.innerText = response;
+                msgs.scrollTop = msgs.scrollHeight;
+            }, 1000);
+        }
+
+        // Explorer Logic
+        const diskItems = [
+            { name: 'System', icon: '⚙️', type: 'folder', system: true },
+            { name: 'Users', icon: '📁', type: 'folder' },
+            { name: 'Apps', icon: '📁', type: 'folder' },
+            { name: 'boot_log.txt', icon: '📄', type: 'file' }
+        ];
+
+        function showDiskC() {
+            const grid = document.getElementById('file-grid');
+            grid.innerHTML = '';
+            diskItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `<span>${item.icon}</span><span>${item.name}</span>`;
+                div.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if(confirm(`Do you want to delete ${item.name}?`)) {
+                        deleteFile(index);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function deleteFile(index) {
+            const item = diskItems[index];
+            if(item.system) {
+                triggerHypeFix();
+            } else {
+                diskItems.splice(index, 1);
+                showDiskC();
+            }
+        }
+
+        function triggerHypeFix() {
+            const overlay = document.getElementById('hypefix-overlay');
+            const bar = document.getElementById('progress-bar');
+            const status = document.getElementById('fix-status');
+            const cloudInfo = document.getElementById('cloud-info');
+            
+            overlay.style.display = 'flex';
+            let prog = 0;
+            const interval = setInterval(() => {
+                prog += 1;
+                bar.style.width = prog + '%';
+                if(prog === 20) status.innerText = "Analyzing system corruption...";
+                if(prog === 40) status.innerText = "Connecting to Hyper Cloud...";
+                if(prog === 60) {
+                    status.innerText = "Restoring data from cloud...";
+                    cloudInfo.style.display = 'block';
+                }
+                if(prog === 80) status.innerText = "Finalizing system reset...";
+                
+                if(prog >= 100) {
+                    clearInterval(interval);
+                    status.innerText = "Reset complete!";
+                    setTimeout(() => {
+                        overlay.style.opacity = '0';
+                        setTimeout(() => location.reload(), 500);
+                    }, 2000);
+                }
+            }, 100);
+        }
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            const cm = document.getElementById('context-menu');
+            cm.style.display = 'flex';
+            cm.style.left = e.clientX + 'px';
+            cm.style.top = e.clientY + 'px';
+            
+            document.onclick = () => {
+                cm.style.display = 'none';
+                document.onclick = null;
+            };
+        }
+
+        // Init
+        showDiskC();
+    </script>
+</body>
+</html>
