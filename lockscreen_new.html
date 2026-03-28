@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootHypeOS - Lock Screen</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('https://pub-1407f82391df4ab1951418d04be76914.r2.dev/uploads/66422359-44b1-44c2-9959-94f31766454f.png') center/cover no-repeat;
+            color: white;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+
+        .overlay {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 60px 0;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .time-container {
+            text-align: center;
+            text-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        #clock {
+            font-size: 120px;
+            font-weight: 300;
+            margin: 0;
+        }
+
+        #date {
+            font-size: 24px;
+            font-weight: 400;
+            margin-top: -10px;
+            opacity: 0.9;
+        }
+
+        .user-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.5s;
+        }
+
+        .user-container.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .username {
+            font-size: 32px;
+            font-weight: 300;
+        }
+
+        .login-input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: white;
+            outline: none;
+            width: 250px;
+            text-align: center;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .hint {
+            font-size: 14px;
+            opacity: 0.7;
+            position: absolute;
+            bottom: 30px;
+        }
+
+        /* ANIMACJA PRZEJŚCIA */
+        body.unlocking {
+            transform: translateY(-100%);
+        }
+    </style>
+</head>
+<body onclick="showLogin()">
+    <div class="overlay">
+        <div class="time-container">
+            <h1 id="clock">12:00</h1>
+            <p id="date">Friday, March 28</p>
+        </div>
+
+        <div class="user-container" id="login-form">
+            <div class="avatar">👤</div>
+            <div class="username" id="display-name">Hype User</div>
+            <input type="password" class="login-input" id="password-input" placeholder="Enter Password" onkeydown="if(event.key==='Enter') unlock()">
+            <p style="font-size: 12px; color: #aaa; cursor: pointer;" onclick="unlock()">Click to sign in</p>
+        </div>
+
+        <div class="hint" id="hint-text">Click anywhere to unlock</div>
+    </div>
+
+    <script>
+        const savedUser = localStorage.getItem('bootos_user') || 'Hype User';
+        document.getElementById('display-name').innerText = savedUser;
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${hours}:${minutes}`;
+            
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('date').innerText = now.toLocaleDateString('en-US', options);
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function showLogin() {
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('hint-text').style.display = 'none';
+            document.getElementById('password-input').focus();
+        }
+
+        function unlock() {
+            // W tej symulacji każde hasło lub kliknięcie "sign in" odblokowuje
+            document.body.classList.add('unlocking');
+            setTimeout(() => {
+                window.location.href = 'newdesktop.html';
+            }, 800);
+        }
+    </script>
+</body>
+</html>
