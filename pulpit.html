@@ -357,6 +357,7 @@
             <div class="power-btn" onclick="togglePowerMenu()">
                 ⏻
                 <div id="power-menu" class="power-menu">
+                    <button onclick="logoutPC()">Wyloguj</button>
                     <button onclick="shutdownPC()">Zamknij</button>
                     <button onclick="restartPC()">Uruchom ponownie</button>
                 </div>
@@ -721,6 +722,15 @@
             setTimeout(() => {
                 window.location.href = "index.html";
             }, 3000);
+        }
+
+        function logoutPC() {
+            // Wylogowanie nie wymaga długiego czekania, ale dodajmy mały efekt
+            document.getElementById('restart-overlay').querySelector('p').innerText = 'Wylogowywanie...';
+            document.getElementById('restart-overlay').style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = "ekranblokady.html";
+            }, 1500);
         }
 
         window.onclick = function(event) {
