@@ -277,7 +277,6 @@
         <button class="btn" onclick="location.reload()">Odśwież</button>
         <button id="btn-split" class="btn" disabled onclick="splitDisk()">Rozdziel na partycje</button>
         <button id="btn-format" class="btn format-btn" disabled onclick="startFormat()">Formatuj</button>
-        <button id="btn-install" class="btn" disabled onclick="setAsInstallTarget()">Ustaw jako dysk systemowy</button>
     </div>
 
     <div class="container">
@@ -377,47 +376,34 @@
             const disks = document.querySelectorAll('.disk-item');
             const formatBtn = document.getElementById('btn-format');
             const splitBtn = document.getElementById('btn-split');
-            const installBtn = document.getElementById('btn-install');
             
-            disks.forEach(d => d.classList.remove('selected'));
+            disks.forEach(d => {
+                d.classList.remove('selected');
+                d.classList.remove('installed-target');
+            });
             
             if (selectedDiskId === id) {
                 selectedDiskId = null;
+                installTargetId = null;
                 formatBtn.disabled = true;
                 splitBtn.disabled = true;
-                installBtn.disabled = true;
             } else {
-                selectedDiskId = id;
-                document.getElementById(id).classList.add('selected');
-                formatBtn.disabled = false;
-                
-                // Można dzielić tylko dysk C i jeśli jest miejsce (> 5GB zostawiamy na C)
-                splitBtn.disabled = (id !== 'disk-c' || availableSpaceOnC <= 10);
-                
-                // Pozwól wybrać jako docelowy tylko jeśli sformatowany
                 const diskData = formattedDisks.get(id);
-                installBtn.disabled = !diskData || !diskData.formatted;
+                if (diskData.size < 30) {
+                    alert('Ten dysk jest za mały! Musi mieć przynajmniej 30 GB.');
+                    return;
+                }
+
+                selectedDiskId = id;
+                installTargetId = id;
+                const selectedElement = document.getElementById(id);
+                selectedElement.classList.add('selected');
+                selectedElement.classList.add('installed-target');
+                
+                formatBtn.disabled = false;
+                splitBtn.disabled = (id !== 'disk-c' || availableSpaceOnC <= 10);
             }
             updateNextButton();
-        }
-
-        function setAsInstallTarget() {
-            const diskData = formattedDisks.get(selectedDiskId);
-            if (!selectedDiskId || !diskData || !diskData.formatted) return;
-            
-            // Wymóg: system waży 5GB, ale potrzebuje 30GB dla płynnego działania
-            if (diskData.size < 30) {
-                alert('BŁĄD: Wybrana partycja jest za mała! Chociaż BootOS waży 5 GB, zalecamy co najmniej 30 GB miejsca, aby system się nie zacinał.');
-                return;
-            }
-
-            const disks = document.querySelectorAll('.disk-item');
-            disks.forEach(d => d.classList.remove('installed-target'));
-            
-            installTargetId = selectedDiskId;
-            document.getElementById(installTargetId).classList.add('installed-target');
-            updateNextButton();
-            alert(`Dysk został wybrany jako docelowy dla systemu.`);
         }
 
         function updateNextButton() {
@@ -522,7 +508,6 @@
                         
                         // Oznacz dysk jako sformatowany w Mapie
                         diskData.formatted = true;
-                        document.getElementById('btn-install').disabled = false;
                         
                         alert(`Formatowanie ${diskLabel} zakończone!`);
                     }, 500);
