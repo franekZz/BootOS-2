@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS-BootX Web Edition</title>
+    <style>
+        :root {
+            --bios-bg: #0000aa;
+            --bios-text: #ffffff;
+            --bios-gray: #aaaaaa;
+            --desktop-bg: #2c3e50;
+            --taskbar-bg: #1a252f;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+            color: white;
+        }
+
+        /* BOOT SPLASH SCREEN */
+        #boot-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+
+        .boot-hint {
+            font-size: 18px;
+            color: #888;
+            margin-top: 50px;
+        }
+
+        /* BIOS STYLE */
+        #bios-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bios-bg);
+            z-index: 1000;
+            display: none; /* Ukryty na starcie */
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .bios-header {
+            background-color: var(--bios-gray);
+            color: var(--bios-bg);
+            text-align: center;
+            padding: 5px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .bios-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid white;
+        }
+
+        .tab {
+            padding: 5px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .tab.active {
+            background-color: var(--bios-gray);
+            color: var(--bios-bg);
+        }
+
+        .bios-content {
+            flex-grow: 1;
+            border: 2px solid white;
+            padding: 20px;
+        }
+
+        .bios-footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: var(--bios-gray);
+        }
+
+        /* DESKTOP STYLE */
+        #desktop {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c3e50, #000000);
+            position: relative;
+        }
+
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: var(--taskbar-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            border-top: 1px solid #34495e;
+        }
+
+        .start-btn {
+            background: #3498db;
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+
+        .window {
+            position: absolute;
+            top: 100px;
+            left: 100px;
+            width: 400px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #2c3e50;
+            display: none;
+        }
+
+        .window-header {
+            background: #bdc3c7;
+            padding: 5px 10px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .window-content {
+            padding: 15px;
+            min-height: 150px;
+        }
+
+        .close-btn {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        /* PROGRESS BAR STARTUP */
+        .progress-container {
+            width: 300px;
+            height: 4px;
+            background: #333;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #3498db;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BOOT SPLASH SCREEN -->
+    <div id="boot-splash">
+        <div class="logo">BootOS-BootX</div>
+        <div class="progress-container">
+            <div id="boot-progress" class="progress-bar"></div>
+        </div>
+        <div class="boot-hint">Naciśnij [DEL], aby wejść do BIOSu</div>
+    </div>
+
+    <!-- BIOS SCREEN -->
+    <div id="bios-screen">
+        <div class="bios-header">BootOS-BootX Setup Utility - Web Edition v1.0</div>
+        
+        <div class="bios-tabs">
+            <div class="tab active" onclick="showTab('main')">Główne</div>
+            <div class="tab" onclick="showTab('update')">Aktualizacja</div>
+            <div class="tab" onclick="bootToDesktop()">Wyjście (Boot)</div>
+        </div>
+
+        <div id="bios-main" class="bios-content">
+            <p>Procesor: Web Core i7 (Virtual)</p>
+            <p>Pamięć: 16 GB WebRAM</p>
+            <p>Dysk: Virtual SSD 512GB</p>
+            <br>
+            <p>Obsługa myszki: Włączona (HTML5 Mode)</p>
+            <p>Obsługa klawiatury: Włączona</p>
+        </div>
+
+        <div id="bios-update" class="bios-content" style="display:none;">
+            <h3>Aktualizacja Systemu</h3>
+            <p>Status: Sprawdzanie...</p>
+            <progress id="update-progress" value="0" max="100" style="width: 100%;"></progress>
+            <p id="update-status">Oczekiwanie na serwer...</p>
+            <button onclick="startUpdate()" style="padding: 10px;">Sprawdź teraz</button>
+        </div>
+
+        <div class="bios-footer">
+            Użyj myszki, aby nawigować po BIOSie. Kliknij "Wyjście (Boot)", aby uruchomić pulpit.
+        </div>
+    </div>
+
+    <!-- DESKTOP SCREEN -->
+    <div id="desktop">
+        <div id="app-window" class="window">
+            <div class="window-header">
+                <span>Mój Komputer</span>
+                <button class="close-btn" onclick="closeWindow()">X</button>
+            </div>
+            <div class="window-content">
+                <p>Witaj w BootOS-BootX!</p>
+                <p>To jest Twój nowy system operacyjny napisany w HTML/JS.</p>
+                <button onclick="alert('Kliknięto przycisk!')">Kliknij mnie</button>
+            </div>
+        </div>
+
+        <div id="taskbar">
+            <button class="start-btn" onclick="openWindow()">START</button>
+            <div style="margin-left: auto; color: white; font-size: 14px;" id="clock"></div>
+        </div>
+    </div>
+
+    <script>
+        let bootTimer;
+        let bootProgress = 0;
+        let isBiosEntered = false;
+
+        // Rozpoczęcie sekwencji startowej (6 sekund)
+        function startBootSequence() {
+            const progressBar = document.getElementById('boot-progress');
+            const totalDuration = 6000; // 6 sekund
+            const interval = 50; // Aktualizacja co 50ms
+            const step = (interval / totalDuration) * 100;
+
+            bootTimer = setInterval(() => {
+                bootProgress += step;
+                if (bootProgress >= 100) {
+                    bootProgress = 100;
+                    clearInterval(bootTimer);
+                    if (!isBiosEntered) {
+                        bootToDesktop();
+                    }
+                }
+                progressBar.style.width = bootProgress + '%';
+            }, interval);
+        }
+
+        // Obsługa klawisza DEL
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "Delete" || e.code === "Delete") {
+                if (document.getElementById('boot-splash').style.display !== 'none') {
+                    enterBios();
+                }
+            }
+        });
+
+        function enterBios() {
+            isBiosEntered = true;
+            clearInterval(bootTimer);
+            document.getElementById('boot-splash').style.display = 'none';
+            document.getElementById('bios-screen').style.display = 'flex';
+        }
+
+        function bootToDesktop() {
+            document.getElementById('boot-splash').style.display = 'none';
+            document.getElementById('bios-screen').style.display = 'none';
+            document.getElementById('desktop').style.display = 'block';
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function showTab(tabName) {
+            document.getElementById('bios-main').style.display = tabName === 'main' ? 'block' : 'none';
+            document.getElementById('bios-update').style.display = tabName === 'update' ? 'block' : 'none';
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs[0].classList.toggle('active', tabName === 'main');
+            tabs[1].classList.toggle('active', tabName === 'update');
+        }
+
+        function startUpdate() {
+            const progress = document.getElementById('update-progress');
+            const status = document.getElementById('update-status');
+            let val = 0;
+            status.innerText = "Pobieranie plików...";
+            
+            const interval = setInterval(() => {
+                val += 5;
+                progress.value = val;
+                if (val >= 100) {
+                    clearInterval(interval);
+                    status.innerText = "System jest aktualny!";
+                }
+            }, 100);
+        }
+
+        function openWindow() {
+            document.getElementById('app-window').style.display = 'block';
+        }
+
+        function closeWindow() {
+            document.getElementById('app-window').style.display = 'none';
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+
+        // Proste przesuwanie okna
+        const win = document.getElementById('app-window');
+        const header = win.querySelector('.window-header');
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+
+        header.onmousedown = (e) => {
+            isDragging = true;
+            offset.x = e.clientX - win.offsetLeft;
+            offset.y = e.clientY - win.offsetTop;
+        };
+
+        window.onmousemove = (e) => {
+            if (isDragging) {
+                win.style.left = (e.clientX - offset.x) + 'px';
+                win.style.top = (e.clientY - offset.y) + 'px';
+            }
+        };
+
+        window.onmouseup = () => isDragging = false;
+
+        // Uruchom start
+        startBootSequence();
+    </script>
+</body>
+</html>
