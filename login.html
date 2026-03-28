@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BootOS - Logowanie</title>
+    <title>BootOS 2</title>
     <style>
         body, html {
             margin: 0;
@@ -116,9 +116,15 @@
             margin-top: 10px;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled) {
             background: #2980b9;
             transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .back-link {
@@ -140,11 +146,11 @@
     <div class="login-box">
         <div class="user-icon">👤</div>
         <h2>Konfiguracja konta</h2>
-        <p style="font-size: 13px; color: #aaa; margin-bottom: 25px;">(jak nie chcesz, nic nie wpisuj)</p>
+        <p style="font-size: 13px; color: #e74c3c; margin-bottom: 25px;">Wpisz nazwę, aby kontynuować</p>
         
         <div class="input-group">
             <label for="username">Podaj Nazwe</label>
-            <input type="text" id="username" placeholder="Twoja nazwa...">
+            <input type="text" id="username" placeholder="Twoja nazwa..." oninput="validateInput()">
         </div>
 
         <div class="input-group">
@@ -152,12 +158,18 @@
             <input type="password" id="password" placeholder="Twoje hasło...">
         </div>
 
-        <button class="login-btn" onclick="login()">Wejdź do systemu</button>
+        <button id="login-btn" class="login-btn" disabled onclick="login()">Wejdź do systemu</button>
         
         <a href="index.html" class="back-link">Wróć do startu</a>
     </div>
 
     <script>
+        function validateInput() {
+            const user = document.getElementById('username').value.trim();
+            const btn = document.getElementById('login-btn');
+            btn.disabled = user.length === 0;
+        }
+
         // TWORZENIE BĄBELKÓW
         function createBubbles() {
             const screen = document.getElementById('animation-background');
@@ -182,9 +194,7 @@
         }
 
         function login() {
-            let user = document.getElementById('username').value;
-            if (!user) user = "Użytkownik";
-
+            const user = document.getElementById('username').value.trim();
             // Przekierowanie do zarządzania dyskami bez alertu
             window.location.href = "dyski.html?user=" + encodeURIComponent(user);
         }
