@@ -496,7 +496,7 @@
 
         function goToDesktop(isHype = true) {
             localStorage.setItem('bootos_hype_active', isHype ? 'true' : 'false');
-            window.location.href = "pulpit.html";
+            window.location.href = isHype ? "newdesktop.html" : "pulpit.html";
         }
 
         function createBubbles() {
