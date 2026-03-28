@@ -177,7 +177,7 @@
             <input type="password" placeholder="Hasło">
         </div>
 
-        <button class="ximi-btn" onclick="goToDisks()">Zaloguj się</button>
+        <button class="ximi-btn" onclick="goToDisks(true)">Zaloguj się</button>
 
         <div class="secondary-links">
             <span class="link" onclick="alert('Tworzenie konta...')">Utwórz konto</span>
@@ -190,7 +190,7 @@
         <div class="modal-content">
             <p>Czy na pewno chcesz pominąć? Nie będziesz miał funkcji Ximi.</p>
             <div class="modal-btns">
-                <button class="modal-btn yes-btn" onclick="goToDisks()">Tak</button>
+                <button class="modal-btn yes-btn" onclick="goToDisks(false)">Tak</button>
                 <button class="modal-btn no-btn" onclick="hideSkipModal()">Nie</button>
             </div>
         </div>
@@ -203,7 +203,7 @@
 
         // Logika automatycznego pominięcia jeśli nie ma WiFi
         if (!hasWifi) {
-            window.location.href = `dyski.html?user=${encodeURIComponent(username)}`;
+            window.location.href = `aktywacja.html?user=${encodeURIComponent(username)}`;
         }
 
         function showSkipModal() {
@@ -214,8 +214,13 @@
             document.getElementById('skipModal').style.display = 'none';
         }
 
-        function goToDisks() {
-            window.location.href = `dyski.html?user=${encodeURIComponent(username)}`;
+        function goToDisks(isXimi = false) {
+            if (isXimi) {
+                localStorage.setItem('bootos_ximi', 'true');
+            } else {
+                localStorage.setItem('bootos_ximi', 'false');
+            }
+            window.location.href = `aktywacja.html?user=${encodeURIComponent(username)}`;
         }
 
         // TWORZENIE BĄBELKÓW
