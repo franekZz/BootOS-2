@@ -62,6 +62,23 @@
             transition: background 0.2s;
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
             z-index: 2;
+            position: absolute;
+            user-select: none;
+        }
+
+        .icon.selected {
+            background: rgba(52, 152, 219, 0.3);
+            border: 1px solid rgba(52, 152, 219, 0.5);
+        }
+
+        /* RAMKA ZAZNACZANIA */
+        #selection-box {
+            position: fixed;
+            border: 1px solid rgba(52, 152, 219, 0.8);
+            background: rgba(52, 152, 219, 0.2);
+            display: none;
+            z-index: 10000;
+            pointer-events: none;
         }
 
         .icon:hover {
@@ -300,28 +317,34 @@
     </div>
 
     <!-- PULPIT -->
-    <div id="desktop" oncontextmenu="showContextMenu(event)">
-        <div class="icon" onclick="openApp('notepad')">
+    <div id="desktop" oncontextmenu="showContextMenu(event)" onmousedown="startSelection(event)">
+        <div class="icon" style="top: 20px; left: 20px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('notepad')">
             <div class="icon-img">📝</div>
             <div class="icon-text">Notatnik</div>
         </div>
-        <div class="icon" onclick="window.location.href='ustawienia.html'">
+        <div class="icon" style="top: 20px; left: 120px;" onmousedown="dragIcon(event, this)" ondblclick="window.location.href='ustawienia.html'">
             <div class="icon-img">⚙️</div>
             <div class="icon-text">Ustawienia</div>
         </div>
-        <div class="icon" onclick="openApp('ximivast')">
+        <div class="icon" style="top: 20px; left: 220px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('ximivast')">
             <div class="icon-img">🛡️</div>
             <div class="icon-text">XimiVast</div>
         </div>
-        <div class="icon" onclick="openApp('explorer')">
-            <div class="icon-img">�</div>
-            <div class="icon-text">Eksplorator</div>
+        <div class="icon" style="top: 130px; left: 20px;" onmousedown="dragIcon(event, this)" ondblclick="openApp('explorer')">
+            <div class="icon-img">📂</div>
+            <div class="icon-text">Pliki</div>
         </div>
-        <div class="icon" onclick="window.location.href='browser.html'">
+        <div class="icon" style="top: 130px; left: 120px;" onmousedown="dragIcon(event, this)" ondblclick="window.location.href='browser.html'">
             <div class="icon-img">🌐</div>
-            <div class="icon-text">Przeglądarka Ximi</div>
+            <div class="icon-text">Przeglądarka</div>
+        </div>
+        <div class="icon" style="top: 130px; left: 220px;" onmousedown="dragIcon(event, this)" ondblclick="openTrash()">
+            <div class="icon-img">🗑️</div>
+            <div class="icon-text">Kosz</div>
         </div>
     </div>
+
+    <div id="selection-box"></div>
 
     <!-- MENU START -->
     <div id="start-menu">
@@ -470,21 +493,42 @@
             </div>
         </div>
         <div class="window-content">
-            <div class="explorer-grid" id="explorer-files">
-                <div class="file-item">
-                    <div class="file-icon">📁</div>
-                    <div class="file-name">Dokumenty</div>
+            <div style="display: flex; gap: 20px; height: 100%;">
+                <div style="width: 150px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 10px;">
+                    <div class="file-item" onclick="showDiskC()" style="flex-direction: row; gap: 10px; padding: 5px;">
+                        <span>💽</span><span>Dysk C:</span>
+                    </div>
                 </div>
-                <div class="file-item">
-                    <div class="file-icon">📁</div>
-                    <div class="file-name">Obrazy</div>
-                </div>
-                <div class="file-item">
-                    <div class="file-icon">📄</div>
-                    <div class="file-name">readme.txt</div>
+                <div class="explorer-grid" id="explorer-files" style="flex: 1;">
+                    <!-- Pliki pojawią się tutaj -->
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="win-trash" class="window" style="top: 250px; left: 250px;">
+        <div class="window-header" onmousedown="dragWindow(event, 'win-trash')">
+            <div class="window-title">🗑️ Kosz</div>
+            <div class="window-controls">
+                <button class="win-btn win-min"></button>
+                <button class="win-btn win-max"></button>
+                <button class="win-btn win-close" onclick="closeApp('trash')"></button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="explorer-grid" id="trash-files">
+                <!-- Usunięte pliki -->
+            </div>
+        </div>
+    </div>
+
+    <!-- RECOVERY OVERLAY -->
+    <div id="recovery-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; backdrop-filter: blur(10px);">
+        <div style="width: 300px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-bottom: 20px;">
+            <div id="recovery-bar" style="width: 0%; height: 100%; background: #3498db; transition: width 0.1s linear;"></div>
+        </div>
+        <h3>Przywracanie Pliku systemowego...</h3>
+        <p>Proszę czekać, system naprawia uszkodzone elementy (10s)</p>
     </div>
 
     <!-- RESTART OVERLAY -->
@@ -590,6 +634,136 @@
         document.body.style.backgroundImage = `url('${savedWallpaper}')`;
         document.getElementById('start-username').innerText = savedUser;
 
+        /* LOGIKA PRZESUWANIA I ZAZNACZANIA */
+        let selectionStartX, selectionStartY;
+        function startSelection(e) {
+            if (e.target.id !== 'desktop') return;
+            selectionStartX = e.clientX;
+            selectionStartY = e.clientY;
+            const box = document.getElementById('selection-box');
+            box.style.display = 'block';
+            box.style.left = selectionStartX + 'px';
+            box.style.top = selectionStartY + 'px';
+            box.style.width = '0px';
+            box.style.height = '0px';
+
+            document.onmousemove = (e) => {
+                const curX = e.clientX;
+                const curY = e.clientY;
+                const width = Math.abs(curX - selectionStartX);
+                const height = Math.abs(curY - selectionStartY);
+                box.style.width = width + 'px';
+                box.style.height = height + 'px';
+                box.style.left = Math.min(curX, selectionStartX) + 'px';
+                box.style.top = Math.min(curY, selectionStartY) + 'px';
+
+                // Zaznaczanie ikon
+                const boxRect = box.getBoundingClientRect();
+                document.querySelectorAll('.icon').forEach(icon => {
+                    const iconRect = icon.getBoundingClientRect();
+                    if (!(iconRect.right < boxRect.left || iconRect.left > boxRect.right || 
+                          iconRect.bottom < boxRect.top || iconRect.top > boxRect.bottom)) {
+                        icon.classList.add('selected');
+                    } else {
+                        icon.classList.remove('selected');
+                    }
+                });
+            };
+
+            document.onmouseup = () => {
+                box.style.display = 'none';
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+        }
+
+        function dragIcon(e, el) {
+            e.stopPropagation();
+            document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+
+            let pos1 = 0, pos2 = 0, pos3 = e.clientX, pos4 = e.clientY;
+            document.onmousemove = (e) => {
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            };
+            document.onmouseup = () => {
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+        }
+
+        /* LOGIKA PLIKÓW I KOSZA */
+        let diskFiles = [
+            { name: 'System', type: 'folder', system: true },
+            { name: 'Użytkownicy', type: 'folder' },
+            { name: 'BootOS_Config', type: 'file' }
+        ];
+        let trashFiles = [];
+
+        function showDiskC() {
+            const grid = document.getElementById('explorer-files');
+            grid.innerHTML = '';
+            diskFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `<div class="file-icon">${file.type === 'folder' ? '📁' : '📄'}</div><div class="file-name">${file.name}</div>`;
+                item.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm(`Czy usunąć ${file.name}?`)) {
+                        deleteFile(index);
+                    }
+                };
+                grid.appendChild(item);
+            });
+            openApp('explorer');
+        }
+
+        function deleteFile(index) {
+            const file = diskFiles.splice(index, 1)[0];
+            trashFiles.push(file);
+            if (file.system) {
+                startRecovery();
+            }
+            showDiskC();
+        }
+
+        function startRecovery() {
+            const overlay = document.getElementById('recovery-overlay');
+            const bar = document.getElementById('recovery-bar');
+            overlay.style.display = 'flex';
+            bar.style.width = '0%';
+            setTimeout(() => bar.style.width = '100%', 100);
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Przywróć plik systemowy
+                const sysFile = trashFiles.find(f => f.system);
+                if (sysFile) {
+                    trashFiles = trashFiles.filter(f => !f.system);
+                    diskFiles.push(sysFile);
+                }
+                showDiskC();
+                alert('System został naprawiony pomyślnie!');
+            }, 10000);
+        }
+
+        function openTrash() {
+            const grid = document.getElementById('trash-files');
+            grid.innerHTML = '';
+            trashFiles.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `<div class="file-icon">${file.type === 'folder' ? '📁' : '📄'}</div><div class="file-name">${file.name}</div>`;
+                grid.appendChild(item);
+            });
+            openApp('trash');
+        }
+
         function updateTaskbarClock() {
             const now = new Date();
             document.getElementById('tb-time').innerText = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
@@ -638,6 +812,18 @@
 
         function closeApp(id) {
             document.getElementById('win-' + id).style.display = 'none';
+        }
+
+        function openTrash() {
+            openApp('trash');
+            const grid = document.getElementById('trash-files');
+            grid.innerHTML = '';
+            trashFiles.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `<div class="file-icon">${file.type === 'folder' ? '📁' : '📄'}</div><div class="file-name">${file.name}</div>`;
+                grid.appendChild(item);
+            });
         }
 
         function createNewFolder() {
