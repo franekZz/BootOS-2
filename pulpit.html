@@ -367,26 +367,29 @@
     <!-- QUICK SETTINGS -->
     <div id="quick-settings">
         <div class="qs-grid">
-            <div class="qs-item active"><span>📶</span><span>WiFi</span></div>
-            <div class="qs-item"><span>🦷</span><span>Bluetooth</span></div>
-            <div class="qs-item"><span>✈️</span><span>Samolot</span></div>
-            <div class="qs-item"><span>🌙</span><span>Nocny</span></div>
-            <div class="qs-item"><span>📍</span><span>Lokalizacja</span></div>
-            <div class="qs-item"><span>🔋</span><span>Oszczędzanie</span></div>
+            <div class="qs-item active" onclick="toggleQSItem(this)"><span>📶</span><span>WiFi</span></div>
+            <div class="qs-item" onclick="toggleQSItem(this)"><span>🦷</span><span>Bluetooth</span></div>
+            <div class="qs-item" onclick="toggleQSItem(this)"><span>✈️</span><span>Samolot</span></div>
+            <div class="qs-item" onclick="toggleQSItem(this)"><span>🌙</span><span>Nocny</span></div>
+            <div class="qs-item" onclick="toggleQSItem(this)"><span>📍</span><span>Lokalizacja</span></div>
+            <div class="qs-item" onclick="toggleQSItem(this)"><span>🔋</span><span>Oszczędzanie</span></div>
         </div>
         <div class="qs-slider">
             <span>☀️</span>
-            <input type="range" value="80">
+            <input type="range" id="brightness-slider" min="0" max="100" value="100" oninput="updateBrightness(this.value)">
         </div>
         <div class="qs-slider">
             <span>🔊</span>
-            <input type="range" value="50">
+            <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="updateVolume(this.value)">
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
             <span style="font-size: 12px; color: #aaa;">Bateria: 85%</span>
             <span style="cursor: pointer;" onclick="window.location.href='ustawienia.html'">⚙️</span>
         </div>
     </div>
+
+    <!-- BRIGHTNESS OVERLAY -->
+    <div id="brightness-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; opacity: 0; pointer-events: none; z-index: 100000;"></div>
 
     <!-- PASEK ZADAŃ -->
     <div id="taskbar">
@@ -601,6 +604,21 @@
             const qs = document.getElementById('quick-settings');
             qs.style.display = qs.style.display === 'block' ? 'none' : 'block';
             document.body.classList.remove('active-start');
+        }
+
+        function toggleQSItem(el) {
+            el.classList.toggle('active');
+        }
+
+        function updateBrightness(val) {
+            // Im niższa wartość, tym ciemniej (overlay bardziej czarny)
+            const overlay = document.getElementById('brightness-overlay');
+            overlay.style.opacity = (100 - val) / 100 * 0.7; // Max 70% przyciemnienia
+        }
+
+        function updateVolume(val) {
+            // Symulacja zmiany głośności
+            console.log("Głośność: " + val + "%");
         }
 
         /* LOGIKA OKIEN I MENU */
