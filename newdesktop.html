@@ -646,11 +646,11 @@
         <div class="window-content" style="display: flex; gap: 0; padding: 0;">
             <div style="width: 180px; background: rgba(0,0,0,0.2); padding: 20px; border-right: 1px solid rgba(255,255,255,0.05);">
                 <div class="sidebar-item active" onclick="showSettingsSection(this, 'system')">System</div>
-                <div class="sidebar-item" onclick="showSettingsSection(this, 'personalization')">Personalizacja</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'personalization')">Personalization</div>
                 <div class="sidebar-item" onclick="showSettingsSection(this, 'account')">HypeAccount</div>
-                <div class="sidebar-item" onclick="showSettingsSection(this, 'security')">Bezpieczeństwo</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'security')">Security</div>
                 <div class="sidebar-item" onclick="showSettingsSection(this, 'cloud')">Hyper Cloud</div>
-                <div class="sidebar-item" onclick="showSettingsSection(this, 'updates')">Aktualizacje</div>
+                <div class="sidebar-item" onclick="showSettingsSection(this, 'updates')">Updates</div>
             </div>
             <div style="flex: 1; padding: 30px; overflow-y: auto;" id="settings-content">
                 <!-- SYSTEM SECTION -->
@@ -658,10 +658,10 @@
                     <h2 style="margin-top: 0; font-weight: 300;">System Information</h2>
                     <div class="settings-card">
                         <p><b>OS Name:</b> BootHypeOS</p>
-                        <p><b>Version:</b> 2026.1 (Hype Edition)</p>
+                        <p><b>Version:</b> 2026.1 (ProAI Edition)</p>
                         <p><b>Processor:</b> HypeAI Core v2</p>
                         <p><b>RAM:</b> 16GB Virtual</p>
-                        <p><b>Storage:</b> 30GB (24GB Free)</p>
+                        <p><b>Storage:</b> 30GB (100GB Free)</p>
                     </div>
                     <div class="settings-card">
                         <h3>Hardware Toggles</h3>
@@ -682,15 +682,15 @@
 
                 <!-- PERSONALIZATION SECTION -->
                 <div id="settings-personalization" class="settings-section">
-                    <h2 style="margin-top: 0; font-weight: 300;">Personalizacja</h2>
+                    <h2 style="margin-top: 0; font-weight: 300;">Personalization</h2>
                     <div class="settings-card">
-                        <h3>Tapeta</h3>
-                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Wpisz URL obrazu, aby zmienić tapetę</p>
+                        <h3>Wallpaper</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Enter image URL to change wallpaper</p>
                         <input type="text" id="wall-input" class="ai-input" placeholder="https://..." style="width: 100%; margin-bottom: 10px;">
-                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeWall()">Zastosuj tapetę</button>
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeWall()">Apply wallpaper</button>
                     </div>
                     <div class="settings-card">
-                        <h3>Motyw systemu</h3>
+                        <h3>System Theme</h3>
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <div style="width: 40px; height: 40px; border-radius: 50%; background: #764ba2; border: 2px solid white; cursor: pointer;"></div>
                             <div style="width: 40px; height: 40px; border-radius: 50%; background: #3498db; cursor: pointer;"></div>
@@ -715,60 +715,60 @@
 
                     <div id="premium-promo" class="settings-card" style="border: 1px solid #f1c40f; background: rgba(241, 196, 15, 0.05);">
                         <h3 style="color: #f1c40f; margin-top: 0;">PremiumHypeAccount</h3>
-                        <p style="font-size: 14px;">Odblokuj zaawansowane funkcje HypeAI i nielimitowaną chmurę.</p>
-                        <p style="font-weight: bold; font-size: 18px;">70 ZŁ <span style="font-size: 12px; font-weight: normal;">/ dzień</span></p>
-                        <button class="store-btn" style="background: #f1c40f; color: black; width: auto; padding: 10px 25px; font-weight: bold;" onclick="buyPremium()">Ulepsz teraz</button>
+                        <p style="font-size: 14px;">Unlock advanced HypeAI features and unlimited cloud storage.</p>
+                        <p style="font-weight: bold; font-size: 18px;">70 ZŁ <span style="font-size: 12px; font-weight: normal;">/ Day</span></p>
+                        <button class="store-btn" style="background: #f1c40f; color: black; width: auto; padding: 10px 25px; font-weight: bold;" onclick="buyPremium()">Upgrade now</button>
                     </div>
 
                     <div class="settings-card">
-                        <h3>Prywatność i Synchronizacja</h3>
+                        <h3>Privacy and Synchronization</h3>
                         <div class="settings-row">
-                            <span>Synchronizacja konta</span>
+                            <span>Account synchronization</span>
                             <div id="sync-toggle" class="toggle-switch on" onclick="toggleSync(this)"></div>
                         </div>
                         <div class="settings-row">
-                            <span>Weryfikacja dwuetapowa</span>
+                            <span>Two-step verification</span>
                             <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
                         </div>
                     </div>
-                    <button id="unsubscribe-btn" class="store-btn" style="width: auto; padding: 10px 25px; background: #7f8c8d; display: none; margin-bottom: 10px;" onclick="unsubscribePremium()">Anuluj subskrypcję Premium</button>
-                    <button class="store-btn" style="width: auto; padding: 10px 25px; background: #e74c3c;" onclick="location.href='index.html'">Wyloguj</button>
+                    <button id="unsubscribe-btn" class="store-btn" style="width: auto; padding: 10px 25px; background: #7f8c8d; display: none; margin-bottom: 10px;" onclick="unsubscribePremium()">Cancel Premium Subscription</button>
+                    <button class="store-btn" style="width: auto; padding: 10px 25px; background: #e74c3c;" onclick="location.href='index.html'">Log out</button>
                 </div>
 
                 <!-- SECURITY SECTION -->
                 <div id="settings-security" class="settings-section">
-                    <h2 style="margin-top: 0; font-weight: 300;">Bezpieczeństwo</h2>
+                    <h2 style="margin-top: 0; font-weight: 300;">Safety</h2>
                     
                     <div class="settings-card">
-                        <h3>Hasło do PC</h3>
-                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Zmień hasło używane do odblokowania tego komputera.</p>
+                        <h3>PC password</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Change the password used to unlock this computer.</p>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <input type="password" id="pc-old-pass" class="ai-input" placeholder="Aktualne hasło PC" style="width: 100%;">
-                            <input type="password" id="pc-new-pass" class="ai-input" placeholder="Nowe hasło PC" style="width: 100%;">
-                            <input type="password" id="pc-confirm-pass" class="ai-input" placeholder="Potwierdź nowe hasło PC" style="width: 100%;">
-                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changePCPassword()">Zmień hasło PC</button>
+                            <input type="password" id="pc-old-pass" class="ai-input" placeholder="Current PC password" style="width: 100%;">
+                            <input type="password" id="pc-new-pass" class="ai-input" placeholder="New PC password" style="width: 100%;">
+                            <input type="password" id="pc-confirm-pass" class="ai-input" placeholder="Confirm new PC password" style="width: 100%;">
+                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changePCPassword()">Change PC password</button>
                         </div>
                     </div>
 
                     <div class="settings-card">
-                        <h3>Hasło HypeAccount</h3>
-                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Zmień hasło do swojego konta HypeAccount (Cloud).</p>
+                        <h3>HypeAccount Password</h3>
+                        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Change your HypeAccount password (Cloud).</p>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <input type="password" id="hype-old-pass" class="ai-input" placeholder="Aktualne hasło Hype" style="width: 100%;">
-                            <input type="password" id="hype-new-pass" class="ai-input" placeholder="Nowe hasło Hype" style="width: 100%;">
-                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeHypePassword()">Zmień hasło Hype</button>
+                            <input type="password" id="hype-old-pass" class="ai-input" placeholder="Current Hype Account Password" style="width: 100%;">
+                            <input type="password" id="hype-new-pass" class="ai-input" placeholder="New Hype Account Password" style="width: 100%;">
+                            <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="changeHypePassword()">Change Hype Account Password</button>
                         </div>
                     </div>
 
                     <div class="settings-card">
-                        <h3>Windows Hello (Symulacja)</h3>
+                        <h3>Hello Hype</h3>
                         <div class="settings-row">
-                            <span>Odcisk palca</span>
-                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Skonfiguruj</button>
+                            <span>Fingerprint</span>
+                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Configure</button>
                         </div>
                         <div class="settings-row">
-                            <span>Rozpoznawanie twarzy</span>
-                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Skonfiguruj</button>
+                            <span>Facial recognition</span>
+                            <button class="store-btn" style="width: auto; padding: 5px 15px; font-size: 12px;">Configure</button>
                         </div>
                     </div>
                 </div>
@@ -777,17 +777,17 @@
                 <div id="settings-cloud" class="settings-section">
                     <h2 style="margin-top: 0; font-weight: 300;">Hyper Cloud</h2>
                     <div class="settings-card" style="border-color: #27c93f;">
-                        <h3 style="color: #27c93f;">Chmura Połączona</h3>
-                        <p>Wszystkie Twoje pliki są bezpiecznie kopiowane do chmury.</p>
+                        <h3 style="color: #27c93f;">Connected Cloud</h3>
+                        <p>All your files are safely backed up to the cloud.</p>
                         <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; margin: 15px 0;">
                             <div id="cloud-progress" style="width: 15%; height: 100%; background: #27c93f; border-radius: 4px; transition: 0.5s;"></div>
                         </div>
-                        <p style="font-size: 12px; color: #aaa;" id="cloud-usage-text">Użyto 1.5 GB z 10 GB</p>
+                        <p style="font-size: 12px; color: #aaa;" id="cloud-usage-text">used 1.5 GB of 10 GB</p>
                     </div>
-                    <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="showCloudPlans()">Synchronizuj / Ulepsz</button>
+                    <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="showCloudPlans()">Synchronize / Upgrade</button>
                     
                     <div id="cloud-plans" style="display: none; margin-top: 20px;">
-                        <h3>Ulepsz miejsce w chmurze</h3>
+                        <h3>Upgrade your cloud storage</h3>
                         <div class="settings-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <div class="settings-card" style="cursor: pointer; padding: 10px;" onclick="upgradeCloud(500, 50)">
                                 <b>500 GB</b><br><span style="color: #27c93f;">50 ZŁ</span>
@@ -810,11 +810,11 @@
 
                 <!-- UPDATES SECTION -->
                 <div id="settings-updates" class="settings-section">
-                    <h2 style="margin-top: 0; font-weight: 300;">Aktualizacje</h2>
+                    <h2 style="margin-top: 0; font-weight: 300;">Updates</h2>
                     <div class="settings-card">
-                        <h3>Status: System aktualny</h3>
-                        <p style="color: #aaa; font-size: 13px;">Ostatnio sprawdzono: Dzisiaj, 12:45</p>
-                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="this.innerText='Sprawdzanie...'; setTimeout(()=>this.innerText='Brak nowych aktualizacji', 2000)">Sprawdź aktualizacje</button>
+                        <h3>Status: System up to date</h3>
+                        <p style="color: #aaa; font-size: 13px;">Last checked: Today, 12:45</p>
+                        <button class="store-btn" style="width: auto; padding: 8px 20px;" onclick="this.innerText='Checking...'; setTimeout(()=>this.innerText='No new updates', 2000)">Check for updates</button>
                     </div>
                 </div>
             </div>
@@ -851,7 +851,7 @@
         <div class="window-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000;">
             <div style="font-size: 50px; margin-bottom: 20px;">🎮</div>
             <h2 style="margin: 0;">Loading HypeGame...</h2>
-            <p style="color: #666;">High Performance Gaming Simulation</p>
+            <p style="color: #666;">High Performance Gaming</p>
         </div>
     </div>
 
