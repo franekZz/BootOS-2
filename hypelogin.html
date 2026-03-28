@@ -55,6 +55,7 @@
             text-align: center;
             border: 1px solid rgba(155, 89, 182, 0.3);
             position: relative;
+            transition: 0.5s;
         }
 
         .logo {
@@ -73,6 +74,13 @@
         .input-group {
             margin-bottom: 15px;
             text-align: left;
+        }
+
+        .input-label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+            display: block;
         }
 
         input {
@@ -123,6 +131,18 @@
             color: white;
         }
 
+        .email-suffix {
+            position: absolute;
+            right: 15px;
+            top: 38px;
+            color: #666;
+            pointer-events: none;
+        }
+
+        .input-with-suffix {
+            position: relative;
+        }
+
         /* MODAL */
         .modal {
             display: none;
@@ -163,28 +183,112 @@
 
         .yes-btn { background: #e74c3c; color: white; }
         .no-btn { background: #333; color: white; }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div id="animation-background"></div>
 
-    <div class="hype-box">
+    <!-- LOGIN VIEW -->
+    <div class="hype-box" id="login-view">
         <div class="logo">H</div>
         <h2>Login to HypeAccount</h2>
         
         <div class="input-group">
-            <input type="text" id="email-input" placeholder="Email or Login">
+            <span class="input-label">Gmail / Login</span>
+            <input type="text" id="login-email" placeholder="name@hype.os">
         </div>
         <div class="input-group">
-            <input type="password" id="pass-input" placeholder="Password">
+            <span class="input-label">Password</span>
+            <input type="password" id="login-pass" placeholder="••••••••">
         </div>
 
-        <button class="hype-btn" onclick="goToDesktop()">Login</button>
+        <div id="login-error" class="error-msg">Invalid email or password!</div>
+
+        <button class="hype-btn" onclick="attemptLogin()">Login</button>
 
         <div class="secondary-links">
-            <span class="link" onclick="createAccount()">Create account</span>
-            <span class="link" onclick="forgotPassword()">Forgot password</span>
+            <span class="link" onclick="switchView('register')">Create account</span>
+            <span class="link" onclick="switchView('ximi')">I used Ximi Account</span>
+            <span class="link" onclick="switchView('forgot')">Forgot password</span>
             <span class="link" onclick="showSkipModal()">Skip</span>
+        </div>
+    </div>
+
+    <!-- XIMI LOGIN VIEW -->
+    <div class="hype-box" id="ximi-view" style="display: none;">
+        <div class="logo" style="color: #3498db;">X</div>
+        <h2>Login with XimiAccount</h2>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 20px;">Use your old Ximi credentials to migrate to Hype.</p>
+        
+        <div class="input-group">
+            <span class="input-label">Ximi Email / Login</span>
+            <input type="text" id="ximi-email" placeholder="name@ximi.os">
+        </div>
+        <div class="input-group">
+            <span class="input-label">Password</span>
+            <input type="password" id="ximi-pass" placeholder="••••••••">
+        </div>
+
+        <div id="ximi-error" class="error-msg">Invalid Ximi credentials!</div>
+
+        <button class="hype-btn" style="background: #3498db;" onclick="attemptXimiLogin()">Login with Ximi</button>
+
+        <div class="secondary-links">
+            <span class="link" onclick="switchView('login')">Back to Hype Login</span>
+        </div>
+    </div>
+
+    <!-- REGISTER VIEW -->
+    <div class="hype-box" id="register-view" style="display: none;">
+        <div class="logo">H</div>
+        <h2>Create HypeAccount</h2>
+        
+        <div class="input-group">
+            <span class="input-label">Create your Gmail</span>
+            <div class="input-with-suffix">
+                <input type="text" id="reg-username" placeholder="yourname" style="padding-right: 80px;">
+                <span class="email-suffix">@hype.os</span>
+            </div>
+        </div>
+        <div class="input-group">
+            <span class="input-label">Password</span>
+            <input type="password" id="reg-pass" placeholder="Create password">
+        </div>
+        <div class="input-group">
+            <span class="input-label">Confirm Password</span>
+            <input type="password" id="reg-confirm" placeholder="Repeat password">
+        </div>
+
+        <div id="reg-error" class="error-msg">Passwords do not match!</div>
+
+        <button class="hype-btn" onclick="attemptRegister()">Create Account</button>
+
+        <div class="secondary-links">
+            <span class="link" onclick="switchView('login')">Already have an account? Login</span>
+        </div>
+    </div>
+
+    <!-- FORGOT VIEW -->
+    <div class="hype-box" id="forgot-view" style="display: none;">
+        <div class="logo">H</div>
+        <h2>Reset Password</h2>
+        
+        <div class="input-group">
+            <span class="input-label">Your Hype Gmail</span>
+            <input type="text" id="forgot-email" placeholder="name@hype.os">
+        </div>
+
+        <button class="hype-btn" onclick="attemptReset()">Send Reset Link</button>
+
+        <div class="secondary-links">
+            <span class="link" onclick="switchView('login')">Back to login</span>
         </div>
     </div>
 
@@ -198,23 +302,105 @@
         </div>
     </div>
 
-    <script>
-        const savedUser = localStorage.getItem('bootos_user') || 'User';
+    <div id="restoreModal" class="modal">
+        <div class="modal-content">
+            <p>XimiAccount verified! Do you want to restore your data?</p>
+            <div class="modal-btns">
+                <button class="modal-btn yes-btn" style="background: #2ecc71;" onclick="restoreData(true)">Yes</button>
+                <button class="modal-btn no-btn" onclick="restoreData(false)">No</button>
+            </div>
+        </div>
+    </div>
 
-        function createAccount() {
-            const hypeEmail = `${savedUser.toLowerCase()}@hype.os`;
-            alert(`Account created successfully!\nYour Hype Email: ${hypeEmail}`);
-            document.getElementById('email-input').value = hypeEmail;
-            localStorage.setItem('bootos_hype_email', hypeEmail);
-            localStorage.setItem('bootos_hype_active', 'true');
+    <script>
+        function switchView(view) {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('register-view').style.display = 'none';
+            document.getElementById('forgot-view').style.display = 'none';
+            document.getElementById('ximi-view').style.display = 'none';
+            document.getElementById(view + '-view').style.display = 'block';
+            
+            // Clear errors
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('reg-error').style.display = 'none';
+            document.getElementById('ximi-error').style.display = 'none';
         }
 
-        function forgotPassword() {
-            const email = document.getElementById('email-input').value;
-            if (email) {
-                alert(`Password reset link sent to: ${email}`);
+        function attemptXimiLogin() {
+            const email = document.getElementById('ximi-email').value.trim();
+            const pass = document.getElementById('ximi-pass').value;
+            const error = document.getElementById('ximi-error');
+
+            // Prosta weryfikacja dla symulacji
+            if (email.length > 3 && pass.length > 0) {
+                document.getElementById('restoreModal').style.display = 'flex';
             } else {
-                alert('Please enter your email first.');
+                error.style.display = 'block';
+            }
+        }
+
+        function restoreData(restore) {
+            if (restore) {
+                alert("Restoring your Ximi data to HypeOS... Please wait.");
+                setTimeout(() => {
+                    alert("Data restored successfully!");
+                    goToDesktop(true);
+                }, 2000);
+            } else {
+                goToDesktop(true);
+            }
+        }
+
+        function attemptRegister() {
+            const username = document.getElementById('reg-username').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const error = document.getElementById('reg-error');
+
+            if (!username || !pass) {
+                error.innerText = "Please fill all fields!";
+                error.style.display = 'block';
+                return;
+            }
+
+            if (pass !== confirm) {
+                error.innerText = "Passwords do not match!";
+                error.style.display = 'block';
+                return;
+            }
+
+            const email = username + "@hype.os";
+            localStorage.setItem('bootos_hype_email', email);
+            localStorage.setItem('bootos_hype_pass', pass);
+            localStorage.setItem('bootos_hype_active', 'true');
+
+            alert(`Account created!\nEmail: ${email}\nYou can now login.`);
+            switchView('login');
+            document.getElementById('login-email').value = email;
+        }
+
+        function attemptLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const error = document.getElementById('login-error');
+
+            const savedEmail = localStorage.getItem('bootos_hype_email');
+            const savedPass = localStorage.getItem('bootos_hype_pass');
+
+            if (email === savedEmail && pass === savedPass) {
+                goToDesktop(true);
+            } else {
+                error.style.display = 'block';
+            }
+        }
+
+        function attemptReset() {
+            const email = document.getElementById('forgot-email').value.trim();
+            if (email.endsWith('@hype.os')) {
+                alert(`Reset link sent to ${email}`);
+                switchView('login');
+            } else {
+                alert("Please enter a valid @hype.os email");
             }
         }
 
@@ -227,32 +413,23 @@
         }
 
         function goToDesktop(isHype = true) {
-            if (isHype) {
-                localStorage.setItem('bootos_hype_active', 'true');
-            } else {
-                localStorage.setItem('bootos_hype_active', 'false');
-            }
+            localStorage.setItem('bootos_hype_active', isHype ? 'true' : 'false');
             window.location.href = "pulpit.html";
         }
 
         function createBubbles() {
             const screen = document.getElementById('animation-background');
             const colors = ['#9b59b6', '#3498db', '#8e44ad', '#2980b9'];
-            
             for (let i = 0; i < 30; i++) {
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
-                
                 const size = Math.random() * 60 + 20 + 'px';
                 bubble.style.width = size;
                 bubble.style.height = size;
-                
                 bubble.style.left = Math.random() * 100 + 'vw';
                 bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                
                 bubble.style.animationDelay = Math.random() * 8 + 's';
                 bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
-                
                 screen.appendChild(bubble);
             }
         }
