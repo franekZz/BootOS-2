@@ -629,20 +629,29 @@
                 <!-- ACCOUNT SECTION -->
                 <div id="settings-account" class="settings-section">
                     <h2 style="margin-top: 0; font-weight: 300;">HypeAccount</h2>
-                    <div class="settings-card">
+                    <div class="settings-card" id="premium-status-card">
                         <div style="display: flex; align-items: center; gap: 20px;">
                             <div style="width: 64px; height: 64px; background: #764ba2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>
                             <div>
                                 <h3 id="set-user-display" style="margin: 0;">Hype User</h3>
-                                <p style="color: #aaa; font-size: 13px; margin: 5px 0;">Premium Member</p>
+                                <p id="user-gmail-display" style="color: #888; font-size: 13px; margin: 2px 0;">user@hype.os</p>
+                                <p id="account-type-tag" style="color: #aaa; font-size: 13px; margin: 5px 0;">Standard Member</p>
                             </div>
                         </div>
                     </div>
+
+                    <div id="premium-promo" class="settings-card" style="border: 1px solid #f1c40f; background: rgba(241, 196, 15, 0.05);">
+                        <h3 style="color: #f1c40f; margin-top: 0;">PremiumHypeAccount</h3>
+                        <p style="font-size: 14px;">Unlock advanced HypeAI features and unlimited cloud storage.</p>
+                        <p style="font-weight: bold; font-size: 18px;">70 ZŁ <span style="font-size: 12px; font-weight: normal;">/ day</span></p>
+                        <button class="store-btn" style="background: #f1c40f; color: black; width: auto; padding: 10px 25px; font-weight: bold;" onclick="buyPremium()">Upgrade Now</button>
+                    </div>
+
                     <div class="settings-card">
                         <h3>Privacy & Security</h3>
                         <div class="settings-row">
                             <span>Account Syncing</span>
-                            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            <div id="sync-toggle" class="toggle-switch on" onclick="toggleSync(this)"></div>
                         </div>
                         <div class="settings-row">
                             <span>Two-Factor Auth</span>
@@ -848,8 +857,27 @@
     <script>
         // Init User Info
         const savedUser = localStorage.getItem('bootos_user') || 'Hype User';
+        const savedPass = localStorage.getItem('bootos_pass') || '1234';
+        const savedEmail = localStorage.getItem('bootos_email') || `${savedUser.toLowerCase().replace(/\s+/g, '')}@hype.os`;
+        
         document.getElementById('username-display').innerText = savedUser;
         document.getElementById('set-user-display').innerText = savedUser;
+        document.getElementById('user-gmail-display').innerText = savedEmail;
+
+        function buyPremium() {
+            if(confirm(`Do you want to subscribe to PremiumHypeAccount for 70 ZŁ / day?\nAccount: ${savedEmail}`)) {
+                document.getElementById('account-type-tag').innerText = "PremiumHypeAccount Member";
+                document.getElementById('account-type-tag').style.color = "#f1c40f";
+                document.getElementById('premium-promo').style.display = 'none';
+                document.getElementById('premium-status-card').style.borderColor = "#f1c40f";
+                
+                // Update Cloud Storage to Unlimited
+                document.getElementById('cloud-progress').style.width = '2%';
+                document.getElementById('cloud-usage-text').innerText = '1.5 GB of ∞ Unlimited used';
+                
+                alert(`Welcome to PremiumHypeAccount, ${savedUser}! Your subscription is now active.`);
+            }
+        }
 
         function showSettingsSection(el, id) {
             document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
@@ -940,9 +968,35 @@
 
         // Window Management
         function openApp(id) {
+            // Sprawdzenie synchronizacji dla aplikacji Hype
+            const isSyncOn = document.getElementById('sync-toggle').classList.contains('on');
+            const isHypeApp = id.toLowerCase().includes('hype') || id === 'ai' || id === 'store';
+            
+            if (!isSyncOn && isHypeApp) {
+                alert("We've been cut off from the Hype Cloud, we have nowhere to save Hype stuff");
+                return;
+            }
+
             document.getElementById('win-' + id).style.display = 'flex';
             document.getElementById('start-menu').classList.remove('active');
             if(id === 'paint') initPaint();
+        }
+
+        function toggleSync(el) {
+            el.classList.toggle('on');
+            const isSyncOn = el.classList.contains('on');
+            const cloudStatus = document.querySelector('#settings-cloud h3');
+            const cloudProgress = document.getElementById('cloud-progress');
+            
+            if (!isSyncOn) {
+                cloudStatus.innerText = 'Cloud Disconnected';
+                cloudStatus.style.color = '#e74c3c';
+                cloudProgress.style.background = '#e74c3c';
+            } else {
+                cloudStatus.innerText = 'Cloud Connected';
+                cloudStatus.style.color = '#27c93f';
+                cloudProgress.style.background = '#27c93f';
+            }
         }
 
         function initPaint() {
