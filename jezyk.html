@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Wybór Języka</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        /* TŁO Z BĄBELKAMI */
+        #animation-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(2px);
+            animation: float 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+
+        .lang-box {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .lang-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+
+        .lang-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lang-item:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .flag {
+            font-size: 24px;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .next-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div id="animation-background"></div>
+
+    <div class="lang-box">
+        <h2>Wybierz język i nazwę</h2>
+        
+        <div style="margin-bottom: 20px; text-align: left;">
+            <label for="username-input" style="display: block; margin-bottom: 5px; color: #ccc;">Twoja Nazwa:</label>
+            <input type="text" id="username-input" placeholder="Wpisz imię..." style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white; outline: none;">
+        </div>
+
+        <ul class="lang-list">
+            <li class="lang-item">
+                <span>Polski (Poland)</span>
+                <span class="flag">🇵🇱</span>
+            </li>
+        </ul>
+
+        <button class="next-btn" onclick="nextStep()">Dalej</button>
+    </div>
+
+    <script>
+        // TWORZENIE BĄBELKÓW
+        function createBubbles() {
+            const screen = document.getElementById('animation-background');
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
+                screen.appendChild(bubble);
+            }
+        }
+
+        function nextStep() {
+            const name = document.getElementById('username-input').value.trim() || 'Użytkownik';
+            localStorage.setItem('bootos_user', name);
+            window.location.href = "wifi.html?user=" + encodeURIComponent(name);
+        }
+
+        window.onload = createBubbles;
+    </script>
+</body>
+</html>
