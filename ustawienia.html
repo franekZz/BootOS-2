@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootOS - Ustawienia</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: black;
+            color: white;
+        }
+
+        #animation-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(2px);
+            animation: float 8s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+        }
+
+        .settings-container {
+            display: flex;
+            height: 100vh;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #3498db;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: #555;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .list-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div id="animation-background"></div>
+    <button class="back-btn" onclick="window.location.href='pulpit.html'">✕ Zamknij</button>
+
+    <div class="settings-container">
+        <div class="sidebar">
+            <h2>Ustawienia</h2>
+            <div class="nav-item active" onclick="showSection('update')">🔄 Aktualizacja</div>
+            <div class="nav-item" onclick="showSection('wifi')">📶 WiFi</div>
+            <div class="nav-item" onclick="showSection('bluetooth')">🦷 Bluetooth</div>
+            <div class="nav-item" onclick="showSection('passwords')">🔑 Hasła</div>
+            <div class="nav-item" onclick="showSection('apps')">📱 Aplikacje</div>
+            <div class="nav-item" onclick="showSection('personalization')">🎨 Personalizacja</div>
+            <div class="nav-item" onclick="showSection('account')">👤 Konto Ximi</div>
+        </div>
+
+        <div class="content">
+            <!-- PERSONALIZACJA -->
+            <div id="section-personalization" class="section">
+                <h1>Personalizacja</h1>
+                <div class="card">
+                    <h3>Tapeta pulpitu</h3>
+                    <p style="color: #aaa;">Wklej link do obrazka, aby zmienić tapetę.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="wallpaper-url" placeholder="Link do tapety (https://...)" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white;">
+                        <button class="btn" onclick="saveWallpaper()">Zastosuj</button>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <p style="font-size: 12px; color: #888;">Podgląd:</p>
+                        <div id="wallpaper-preview" style="width: 200px; height: 112px; border: 1px solid #444; border-radius: 5px; background-size: cover; background-position: center;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- AKTUALIZACJA -->
+            <div id="section-update" class="section active">
+                <h1>Aktualizacja Poprawek</h1>
+                <div class="card">
+                    <h3>Status: System jest aktualny</h3>
+                    <p style="color: #aaa;">Ostatnio sprawdzano: Dzisiaj, 12:45</p>
+                    <button class="btn" onclick="alert('Sprawdzanie aktualizacji...')">Sprawdź aktualizacje</button>
+                </div>
+            </div>
+
+            <!-- WIFI -->
+            <div id="section-wifi" class="section">
+                <h1>WiFi</h1>
+                <div class="card">
+                    <div class="list-item">
+                        <span>WiFi</span>
+                        <input type="checkbox" checked>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3>Dostępne sieci:</h3>
+                        <div class="list-item"><span>📶 XimiWifi</span><span style="color: #3498db;">Połączono</span></div>
+                        <div class="list-item"><span>📶 ProGamerWifi</span><span>Zabezpieczona</span></div>
+                        <div class="list-item"><span>📶 Tomato</span><span>Sąsiad</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLUETOOTH -->
+            <div id="section-bluetooth" class="section">
+                <h1>Bluetooth</h1>
+                <div class="card">
+                    <div class="list-item">
+                        <span>Bluetooth</span>
+                        <input type="checkbox">
+                    </div>
+                    <p style="color: #aaa; margin-top: 15px;">Włącz Bluetooth, aby wyszukać urządzenia.</p>
+                </div>
+            </div>
+
+            <!-- HASŁA -->
+            <div id="section-passwords" class="section">
+                <h1>Hasła i Zabezpieczenia</h1>
+                <div class="card">
+                    <h3>Hasło systemowe</h3>
+                    <p style="color: #aaa;">Zmień swoje hasło do logowania.</p>
+                    <button class="btn" onclick="alert('Zmienianie hasła...')">Zmień hasło</button>
+                </div>
+                <div class="card">
+                    <h3>Zapamiętane hasła WiFi</h3>
+                    <div class="list-item"><span>XimiWifi</span><span>********</span></div>
+                </div>
+            </div>
+
+            <!-- APPLIKACJE -->
+            <div id="section-apps" class="section">
+                <h1>Zainstalowane Aplikacje</h1>
+                <div class="card">
+                    <div class="list-item">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>📝</span>
+                            <div>
+                                <div>Notatnik</div>
+                                <div style="font-size: 11px; color: #aaa;">Wersja 1.0.4</div>
+                            </div>
+                        </div>
+                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;">Odinstaluj</button>
+                    </div>
+                    <div class="list-item">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>🛡️</span>
+                            <div>
+                                <div>XimiVast Antivirus</div>
+                                <div style="font-size: 11px; color: #aaa;">Wersja 2.1.0</div>
+                            </div>
+                        </div>
+                        <button class="btn" style="background: #e74c3c; padding: 5px 10px;">Odinstaluj</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KONTO -->
+            <div id="section-account" class="section">
+                <h1>Konto Ximi</h1>
+                <div class="card">
+                    <div class="user-header">
+                        <div class="user-avatar">👤</div>
+                        <div>
+                            <h2 id="user-name" style="margin:0;">Użytkownik</h2>
+                            <p id="ximi-status" style="color: #aaa; margin: 5px 0 0 0;">Konto Lokalne</p>
+                        </div>
+                    </div>
+                    <button class="btn" id="ximi-action-btn">Zarządzaj kontem</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const savedUser = localStorage.getItem('bootos_user') || 'Użytkownik';
+        const isXimi = localStorage.getItem('bootos_ximi') === 'true';
+        const savedWallpaper = localStorage.getItem('bootos_wallpaper') || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80';
+
+        document.getElementById('user-name').innerText = savedUser;
+        document.getElementById('wallpaper-url').value = savedWallpaper;
+        document.getElementById('wallpaper-preview').style.backgroundImage = `url('${savedWallpaper}')`;
+
+        if (isXimi) {
+            document.getElementById('ximi-status').innerText = 'Konto XimiAccount';
+            document.getElementById('ximi-status').style.color = '#3498db';
+        }
+
+        function saveWallpaper() {
+            const url = document.getElementById('wallpaper-url').value;
+            localStorage.setItem('bootos_wallpaper', url);
+            document.getElementById('wallpaper-preview').style.backgroundImage = `url('${url}')`;
+            alert('Tapeta została zapisana!');
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById('section-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function createBubbles() {
+            const screen = document.getElementById('animation-background');
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22'];
+            
+            for (let i = 0; i < 30; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20 + 'px';
+                bubble.style.width = size;
+                bubble.style.height = size;
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                bubble.style.animationDelay = Math.random() * 8 + 's';
+                bubble.style.animationDuration = Math.random() * 5 + 5 + 's';
+                screen.appendChild(bubble);
+            }
+        }
+
+        window.onload = createBubbles;
+    </script>
+</body>
+</html>
