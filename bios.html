@@ -61,21 +61,40 @@
         }
 
         .bios-option {
-            padding: 5px 10px;
+            padding: 10px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             max-width: 600px;
+            border: 1px solid transparent;
         }
 
-        .bios-option:hover {
-            background: #ffffff;
-            color: #0000aa;
+        .bios-option:hover, .bios-option.focused {
+            background: rgba(255,255,255,0.2);
+            border: 1px dotted #fff;
         }
 
-        .bios-option.selected {
+        .bios-option.dragging {
+            opacity: 0.5;
             background: #ffff00;
             color: #0000aa;
+            border: 1px dashed #fff;
+        }
+
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        .save-btn.focused {
+            background: #2ecc71;
+            outline: 3px solid #ffff00;
         }
 
         footer {
@@ -113,18 +132,12 @@
             text-align: center;
         }
 
-        .file-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
         .file-item {
             padding: 5px 10px;
             cursor: pointer;
         }
 
-        .file-item:hover {
+        .file-item:hover, .file-item.focused {
             background: #0000aa;
             color: #ffffff;
         }
@@ -166,62 +179,61 @@
     <div id="bios-container">
         <header>HypeBIOS Setup Utility - Version 2.40.12</header>
         
-        <nav>
-            <div class="nav-tab active" onclick="showTab('accessibility')">Accessibility</div>
-            <div class="nav-tab" onclick="showTab('update')">Update</div>
-            <div class="nav-tab" onclick="showTab('systems')">Systems</div>
+        <nav id="bios-nav">
+            <div class="nav-tab active" data-tab="accessibility">Accessibility</div>
+            <div class="nav-tab" data-tab="update">Update</div>
+            <div class="nav-tab" data-tab="systems">Systems</div>
         </nav>
 
         <main id="tab-content">
-            <!-- Content will be injected by JS -->
+            <!-- Content injected by JS -->
         </main>
 
         <footer>
-            <span>F1: Help | Esc: Exit | Arrows: Select | Enter: Execute</span>
+            <span>Arrows: Navigate | Enter: Select | ESC: Exit</span>
             <span id="bios-clock">12:00:00</span>
         </footer>
     </div>
 
-    <!-- ADD SYSTEM MODAL -->
+    <!-- MODALS -->
     <div id="modal-drive" class="modal">
         <div class="modal-header">Select Drive</div>
-        <div class="file-item" onclick="nextStep('local')">💽 Local Disk (C:)</div>
-        <div class="file-item" onclick="nextStep('pendrive')">🔌 Blue Pendrive</div>
+        <div class="file-item" data-action="local">💽 Local Disk (C:)</div>
+        <div class="file-item" data-action="pendrive">🔌 Blue Pendrive</div>
     </div>
 
     <div id="modal-iso" class="modal">
         <div class="modal-header">Select File</div>
-        <div class="file-item" onclick="nextStep('iso-clicked')">📄 binaryos.iso</div>
+        <div class="file-item" data-action="iso-clicked">📄 binaryos.iso</div>
     </div>
 
     <div id="modal-files1" class="modal">
         <div class="modal-header">Select File from binaryos.iso</div>
-        <div class="file-item" onclick="wrongFile()">OIP0</div>
-        <div class="file-item" onclick="wrongFile()">VED</div>
-        <div class="file-item" onclick="wrongFile()">OK</div>
-        <div class="file-item" onclick="wrongFile()">GTR</div>
-        <div class="file-item" onclick="nextStep('div2')">DIV2</div>
+        <div class="file-item" data-action="wrong">OIP0</div>
+        <div class="file-item" data-action="wrong">VED</div>
+        <div class="file-item" data-action="wrong">OK</div>
+        <div class="file-item" data-action="wrong">GTR</div>
+        <div class="file-item" data-action="div2">DIV2</div>
     </div>
 
     <div id="modal-files2" class="modal">
         <div class="modal-header">Select Sub-file</div>
-        <div class="file-item" onclick="wrongFile()">PCDRIVE</div>
-        <div class="file-item" onclick="wrongFile()">SIGMAFIX</div>
-        <div class="file-item" onclick="wrongFile()">CAM6</div>
-        <div class="file-item" onclick="wrongFile()">NDV1000</div>
-        <div class="file-item" onclick="wrongFile()">DVD9</div>
-        <div class="file-item" onclick="wrongFile()">DVD</div>
-        <div class="file-item" onclick="wrongFile()">DVDT7</div>
-        <div class="file-item" onclick="nextStep('div100')">DIV100</div>
+        <div class="file-item" data-action="wrong">PCDRIVE</div>
+        <div class="file-item" data-action="wrong">SIGMAFIX</div>
+        <div class="file-item" data-action="wrong">CAM6</div>
+        <div class="file-item" data-action="wrong">NDV1000</div>
+        <div class="file-item" data-action="wrong">DVD9</div>
+        <div class="file-item" data-action="wrong">DVD</div>
+        <div class="file-item" data-action="wrong">DVDT7</div>
+        <div class="file-item" data-action="div100">DIV100</div>
     </div>
 
     <div id="modal-final" class="modal">
         <div class="modal-header">Final Selection</div>
-        <div class="file-item" id="klop-file" onclick="selectKlop()">klop.byl</div>
-        <button id="confirm-btn" style="margin-top: 10px; display: none;" onclick="finishAddSystem()">Zatwierdź</button>
+        <div class="file-item" id="klop-file" data-action="select-klop">klop.byl</div>
+        <button id="confirm-btn" class="save-btn" style="margin-top: 10px; display: none;" data-action="finish">Zatwierdź</button>
     </div>
 
-    <!-- READING OVERLAY -->
     <div id="reading-overlay">
         <div class="spinner"></div>
         <h1 id="reading-text">Odczytywanie Systemu...</h1>
@@ -230,9 +242,12 @@
     <script>
         let currentTab = 'accessibility';
         let systems = [
-            { name: 'BootHypeOS', priority: 1 },
-            { name: 'FactoryOS', priority: 2 }
+            { name: 'BootHypeOS', id: 'hype' },
+            { name: 'FactoryOS', id: 'factory' }
         ];
+        let focusedIndex = 0;
+        let activeModal = null;
+        let tabs = ['accessibility', 'update', 'systems'];
 
         function updateClock() {
             const now = new Date();
@@ -241,101 +256,160 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        function showTab(tab) {
-            currentTab = tab;
+        function showTab(tabName) {
+            currentTab = tabName;
+            focusedIndex = 0;
             document.querySelectorAll('.nav-tab').forEach(t => {
-                t.classList.toggle('active', t.innerText.toLowerCase() === tab);
+                t.classList.toggle('active', t.dataset.tab === tabName);
             });
             render();
-        }
-
-        function render() {
-            const main = document.getElementById('tab-content');
-            main.innerHTML = '';
-
-            if (tabContent[currentTab]) {
-                tabContent[currentTab](main);
-            }
         }
 
         const tabContent = {
             accessibility: (container) => {
                 container.innerHTML = `
-                    <div class="bios-option"><span>Skip BootOS 2 Installation</span><span>[Enabled]</span></div>
-                    <div class="bios-option"><span>Skip BootHypeOS Installation</span><span>[Enabled]</span></div>
-                    <div class="bios-option" onclick="alert('Repairing System...')"><span>Repair System</span><span>[Execute]</span></div>
+                    <div class="bios-option" data-action="skip-boos">
+                        <span>Skip BootOS 2 Installation</span><span>[Execute]</span>
+                    </div>
+                    <div class="bios-option" data-action="skip-hype">
+                        <span>Skip BootHypeOS Installation</span><span>[Execute]</span>
+                    </div>
+                    <div class="bios-option" data-action="repair">
+                        <span>Repair System</span><span>[Execute]</span>
+                    </div>
                 `;
             },
             update: (container) => {
-                container.innerHTML = `
-                    <div style="text-align: center; margin-top: 50px;">
-                        <p>BIOS Update module will be added in a future update.</p>
-                        <p>Current Version: 2.40.12</p>
-                    </div>
-                `;
+                container.innerHTML = `<div style="text-align: center; margin-top: 50px;"><p>Update module coming soon.</p></div>`;
             },
             systems: (container) => {
-                let listHtml = systems.map((s, i) => `
-                    <div class="bios-option ${s.name === 'Unknown System' ? 'new-sys' : ''}" onclick="${s.name === 'Unknown System' ? 'readSystem()' : ''}">
-                        <span>${i+1}. ${s.name}</span>
-                        <span>${i === 0 ? '[Boot Primary]' : '[Available]'}</span>
-                    </div>
-                `).join('');
-
                 container.innerHTML = `
                     <div style="display: flex; gap: 20px; align-items: flex-start;">
                         <div style="flex: 1;">
-                            <h3>System Priority List</h3>
-                            ${listHtml}
+                            <h3>System Priority List (Drag or Arrows)</h3>
+                            <div id="systems-list">
+                                ${systems.map((s, i) => `
+                                    <div class="bios-option" draggable="true" ondragstart="handleDragStart(event, ${i})" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${i})">
+                                        <span>${i+1}. ${s.name} ${i === 0 ? '<b>[BOOT]</b>' : ''}</span><span>[::: Drag]</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="save-btn" data-action="save-exit">Save & Exit Setup</button>
                         </div>
-                        <button class="nav-tab" style="cursor: pointer; border: 2px solid #fff;" onclick="openAddSystem()">Dodaj system</button>
+                        <button class="nav-tab" style="border: 2px solid #fff;" data-action="add-system">Dodaj system</button>
                     </div>
                 `;
             }
         };
 
-        // ADD SYSTEM FLOW
-        function openAddSystem() {
-            document.getElementById('modal-drive').style.display = 'flex';
+        function render() {
+            const main = document.getElementById('tab-content');
+            tabContent[currentTab](main);
+            updateFocus();
         }
 
-        function nextStep(step) {
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            if (step === 'pendrive') {
-                document.getElementById('modal-iso').style.display = 'flex';
-            } else if (step === 'iso-clicked') {
-                document.getElementById('modal-files1').style.display = 'flex';
-            } else if (step === 'div2') {
-                document.getElementById('modal-files2').style.display = 'flex';
-            } else if (step === 'div100') {
-                document.getElementById('modal-final').style.display = 'flex';
-            } else {
-                alert("Drive not found or corrupted.");
+        function updateFocus() {
+            const items = getFocusableItems();
+            items.forEach((item, i) => {
+                item.classList.toggle('focused', i === focusedIndex);
+            });
+        }
+
+        function getFocusableItems() {
+            if (activeModal) {
+                return Array.from(activeModal.querySelectorAll('.file-item, .save-btn')).filter(el => el.style.display !== 'none');
             }
+            return Array.from(document.querySelectorAll('.bios-option, .save-btn, .systems .nav-tab[data-action="add-system"]'));
         }
 
-        function wrongFile() {
-            alert("Error: File not compatible with this BIOS version.");
+        document.addEventListener('keydown', (e) => {
+            const items = getFocusableItems();
+            
+            if (e.key === 'ArrowDown') {
+                focusedIndex = (focusedIndex + 1) % items.length;
+                updateFocus();
+            } else if (e.key === 'ArrowUp') {
+                focusedIndex = (focusedIndex - 1 + items.length) % items.length;
+                updateFocus();
+            } else if (e.key === 'ArrowRight' && !activeModal) {
+                let nextTabIndex = (tabs.indexOf(currentTab) + 1) % tabs.length;
+                showTab(tabs[nextTabIndex]);
+            } else if (e.key === 'ArrowLeft' && !activeModal) {
+                let prevTabIndex = (tabs.indexOf(currentTab) - 1 + tabs.length) % tabs.length;
+                showTab(tabs[prevTabIndex]);
+            } else if (e.key === 'Enter') {
+                const item = items[focusedIndex];
+                if (item) item.click();
+            } else if (e.key === 'Escape') {
+                if (activeModal) closeModal();
+            }
+        });
+
+        // ACTIONS
+        document.addEventListener('click', (e) => {
+            const action = e.target.closest('[data-action]')?.dataset.action || e.target.dataset.action;
+            if (!action) return;
+
+            if (action === 'skip-boos') window.location.href = 'pulpit.html';
+            if (action === 'skip-hype') window.location.href = 'newdesktop.html';
+            if (action === 'repair') alert('Repairing...');
+            if (action === 'add-system') openModal('modal-drive');
+            if (action === 'local') alert('Drive error.');
+            if (action === 'pendrive') openModal('modal-iso');
+            if (action === 'iso-clicked') openModal('modal-files1');
+            if (action === 'div2') openModal('modal-files2');
+            if (action === 'div100') openModal('modal-final');
+            if (action === 'select-klop') selectKlop();
+            if (action === 'finish') finishAddSystem();
+            if (action === 'save-exit') saveAndExit();
+            if (action === 'wrong') alert('Wrong file.');
+        });
+
+        function openModal(id) {
+            closeModal();
+            activeModal = document.getElementById(id);
+            activeModal.style.display = 'flex';
+            focusedIndex = 0;
+            updateFocus();
+        }
+
+        function closeModal() {
+            if (activeModal) activeModal.style.display = 'none';
+            activeModal = null;
+            focusedIndex = 0;
+            render();
         }
 
         function selectKlop() {
             document.getElementById('klop-file').classList.add('selected');
             document.getElementById('confirm-btn').style.display = 'block';
+            updateFocus();
         }
 
         function finishAddSystem() {
-            document.getElementById('modal-final').style.display = 'none';
-            systems.push({ name: 'Unknown System', priority: systems.length + 1 });
+            systems.push({ name: 'Unknown System', id: 'unknown' });
+            closeModal();
+        }
+
+        function saveAndExit() {
+            if (systems[0].name === 'Unknown System') {
+                document.getElementById('reading-overlay').style.display = 'flex';
+            } else {
+                location.reload();
+            }
+        }
+
+        // DRAG LOGIC
+        let dragSourceIndex = null;
+        function handleDragStart(e, index) { dragSourceIndex = index; }
+        function handleDragOver(e) { e.preventDefault(); }
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            const movedItem = systems.splice(dragSourceIndex, 1)[0];
+            systems.splice(targetIndex, 0, movedItem);
             render();
-            alert("New System added to the list: Unknown System");
         }
 
-        function readSystem() {
-            document.getElementById('reading-overlay').style.display = 'flex';
-            // Waiting for further instructions as per user request
-        }
-
-        // Init
         render();
     </script>
 </body>
