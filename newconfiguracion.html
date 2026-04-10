@@ -88,7 +88,7 @@
 
         h2 { margin: 0; font-weight: 300; font-size: 28px; }
         
-        select, input {
+        input {
             padding: 14px 20px;
             border-radius: 12px;
             border: 1px solid var(--input-border);
@@ -133,6 +133,19 @@
         .package-card:hover { border-color: var(--accent-color); transform: scale(1.05); }
         .package-card.ai { border-color: #9b59b6; background: rgba(155, 89, 182, 0.05); }
 
+        #qr-code-sim {
+            width: 200px;
+            height: 200px;
+            background: #000;
+            margin: 20px auto;
+            border: 10px solid white;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .qr-pixel { width: 10%; height: 10%; background: #000; }
+        .qr-pixel.white { background: #fff; }
+
         #install-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; color: #fff; z-index: 1000; display: none;
@@ -142,7 +155,6 @@
         .progress-bar { width: 350px; height: 6px; background: #333; border-radius: 3px; margin: 30px 0; overflow: hidden; }
         #progress-fill { width: 0%; height: 100%; background: var(--accent-color); transition: 0.5s; }
 
-        /* Mobile specific styles */
         @media (max-width: 600px) {
             .config-card { width: 90%; padding: 20px; }
         }
@@ -152,128 +164,108 @@
     <div id="bubble-container"></div>
 
     <!-- PC VIEW: INITIAL -->
-    <div class="config-card active" id="step-pc-start">
-        <h2 id="device-detect-title">Detecting Device...</h2>
-        <p id="device-info"></p>
-        <div id="pc-instructions" style="display:none;">
-            <p>To activate BinaryOS, please open this page on your phone.</p>
-            <div style="background: #eee; padding: 20px; border-radius: 10px; margin: 10px 0;">
-                <p style="font-size: 12px; color: #666;">Fake QR Code / Link</p>
-                <b id="fake-ip">IP: 192.168.1.45</b>
-            </div>
-            <p style="font-size: 14px;">Waiting for phone connection...</p>
-            <button class="btn" onclick="simulatePhone()">Simulate Phone (For Testing)</button>
+    <div class="config-card active" id="step-pc-waiting">
+        <h2>License Activation</h2>
+        <p>Your IP: <b id="pc-ip">192.168.1.45</b></p>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 10px 0; border: 1px dashed #ccc;">
+            <p style="font-size: 14px; color: #555;">Please open this page on your phone to continue.</p>
+            <div id="qr-mini" style="width: 80px; height: 80px; background: #333; margin: 10px auto;"></div>
         </div>
-        <div id="phone-ui" style="display:none;">
-            <h2 id="phone-os-title">Mobile Activation</h2>
-            <p>Choose your license package:</p>
-            <div class="package-grid" id="phone-packages">
-                <!-- Packages will be loaded here -->
-            </div>
-        </div>
+        <p style="font-size: 12px; color: #888;">Waiting for mobile connection...</p>
+        <button class="btn" style="background:#888; font-size: 12px;" onclick="simulatePhone()">[ TEST ] Simulate Phone</button>
     </div>
 
     <!-- PC VIEW: CODE INPUT -->
-    <div class="config-card" id="step-pc-code">
-        <h2>Enter Activation Code</h2>
-        <p>Enter the 5-digit code shown on your phone.</p>
-        <input type="text" id="activation-code-input" placeholder="00000" maxlength="5" style="letter-spacing: 10px; font-size: 24px; text-align: center;">
-        <button class="btn" onclick="verifyCode()" style="margin-top: 20px;">Activate</button>
+    <div class="config-card" id="step-pc-code-input">
+        <h2>Enter Code</h2>
+        <p>Enter the 5-digit code from your phone.</p>
+        <input type="text" id="pc-activation-code" placeholder="00000" maxlength="5" style="letter-spacing: 10px; font-size: 32px; text-align: center;">
+        <button class="btn" style="margin-top: 20px;" onclick="verifyCodeOnPC()">Activate</button>
     </div>
 
-    <!-- COMMON STEPS (Language, Wifi, etc.) -->
-    <div class="config-card" id="step-lang">
-        <h2>Select Language</h2>
-        <select id="lang-select">
-            <option value="en">English (Default)</option>
-            <option value="pl">Polski</option>
-            <option value="cn">中文</option>
-            <option value="ua">Українська</option>
-        </select>
-        <button class="btn" onclick="nextStep('wifi')">Next</button>
+    <!-- PC VIEW: QR DISPLAY -->
+    <div class="config-card" id="step-pc-qr-display">
+        <h2>Scan QR Code</h2>
+        <p>Scan this code with your phone camera.</p>
+        <div id="qr-code-sim"></div>
+        <p style="font-size: 12px; color: #888;">Detecting scan...</p>
     </div>
 
-    <div class="config-card" id="step-wifi">
-        <h2>Connect to WiFi</h2>
+    <!-- PHONE VIEW: PACKAGES -->
+    <div class="config-card" id="step-phone-packages">
+        <h2 id="phone-title">Phone Detected</h2>
+        <p style="font-size: 12px; color: #27ae60;">IP Match: 192.168.1.45 (Same Network)</p>
+        <p>Select your package:</p>
         <div class="package-grid">
-            <div class="package-card" onclick="alert('Connected!') || nextStep('install')">📶 GamerWifi</div>
-            <div class="package-card" onclick="alert('Connected!') || nextStep('install')">📶 TpLink</div>
+            <div class="package-card" onclick="chooseMethod('Basic Pack', '50zł')"><b>Basic</b><br><small>50zł</small></div>
+            <div class="package-card" onclick="chooseMethod('Home Pack', '80zł')"><b>Home</b><br><small>80zł</small></div>
+            <div class="package-card ai" onclick="chooseMethod('ProAI Pack', '100zł/mo')"><b>ProAI</b><br><small>100zł/mo</small></div>
+            <div class="package-card ai" onclick="chooseMethod('TeraAI Pack', '150zł/mo')"><b>TeraAI</b><br><small>150zł/mo</small></div>
         </div>
-        <button class="btn btn-skip" onclick="alert('Internet required!')">Skip WiFi</button>
     </div>
 
-    <!-- INSTALLATION OVERLAY -->
+    <!-- PHONE VIEW: METHOD CHOICE -->
+    <div class="config-card" id="step-phone-method">
+        <h2>Activation Method</h2>
+        <p id="method-pkg-name"></p>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <button class="btn" onclick="startMethod('code')">Use Code</button>
+            <button class="btn" style="background: #27ae60;" onclick="startMethod('qr')">Use QR Code</button>
+        </div>
+    </div>
+
+    <!-- PHONE VIEW: SHOW CODE -->
+    <div class="config-card" id="step-phone-show-code">
+        <h2>Your Code</h2>
+        <div style="font-size: 40px; font-weight: bold; color: var(--accent-color); margin: 20px 0;" id="generated-code-display">00000</div>
+        <p>Enter this code on your PC.</p>
+        <button class="btn" style="background:#444;" onclick="resetSimulation()">Finish on PC</button>
+    </div>
+
+    <!-- PHONE VIEW: SCANNING -->
+    <div class="config-card" id="step-phone-scanning">
+        <h2>Scanning...</h2>
+        <div style="width: 100%; height: 200px; background: #000; border-radius: 15px; position: relative; overflow: hidden;">
+            <div style="width: 100%; height: 2px; background: #0f0; position: absolute; top: 0; animation: scanLine 2s infinite linear;"></div>
+        </div>
+        <p>Point at the QR code on your PC.</p>
+    </div>
+
+    <!-- SUCCESS (Both) -->
+    <div class="config-card" id="step-success">
+        <h2 style="color: #27ae60;">✓ Activated</h2>
+        <p>Licence verified successfully.</p>
+        <button class="btn" onclick="startInstallation()">Continue Installation</button>
+    </div>
+
+    <!-- INSTALL OVERLAY -->
     <div id="install-overlay">
-        <h2 id="install-title">Installing BinaryOS...</h2>
+        <h2>Installing BinaryOS...</h2>
         <div class="progress-bar"><div id="progress-fill"></div></div>
         <p id="install-status">Copying files...</p>
     </div>
 
     <script>
-        // BUBBLES
-        const container = document.getElementById('bubble-container');
-        for(let i=0; i<15; i++) {
-            const b = document.createElement('div');
-            b.className = 'bubble';
-            const size = Math.random() * 200 + 100 + 'px';
-            b.style.width = size; b.style.height = size;
-            b.style.left = Math.random() * 100 + '%';
-            b.style.top = Math.random() * 100 + '%';
-            b.style.animationDelay = Math.random() * 5 + 's';
-            container.appendChild(b);
+        // QR Code Generator
+        const qrContainer = document.getElementById('qr-code-sim');
+        for(let i=0; i<100; i++) {
+            const pixel = document.createElement('div');
+            pixel.className = 'qr-pixel' + (Math.random() > 0.5 ? ' white' : '');
+            qrContainer.appendChild(pixel);
         }
 
         let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        let currentPackage = "";
         let generatedCode = "";
-        let selectedVersion = localStorage.getItem('binary_version') || 'ProAI';
 
         function init() {
-            const title = document.getElementById('device-detect-title');
-            const info = document.getElementById('device-info');
-            
-            if (isMobile) {
-                title.innerText = "Phone Detected";
-                info.innerText = navigator.userAgent.includes('iPhone') ? "Device: Apple iPhone" : "Device: Android Phone";
-                showPhoneUI();
+            if(isMobile) {
+                const phoneTitle = document.getElementById('phone-title');
+                phoneTitle.innerText = navigator.userAgent.includes('iPhone') ? "iPhone Detected" : "Android Detected";
+                nextStep('phone-packages');
             } else {
-                title.innerText = "PC/Laptop Detected";
-                info.innerText = "Connection: Local Network (IP: 192.168.1.45)";
-                document.getElementById('pc-instructions').style.display = 'block';
+                nextStep('pc-waiting');
             }
-        }
-
-        function showPhoneUI() {
-            document.getElementById('pc-instructions').style.display = 'none';
-            document.getElementById('phone-ui').style.display = 'block';
-            const pkgContainer = document.getElementById('phone-packages');
-            
-            const packages = [
-                { name: "Basic Pack", type: "normal", price: "50zł" },
-                { name: "Home Pack", type: "normal", price: "80zł" },
-                { name: "ProAI Pack", type: "ai", price: "100zł/mo" },
-                { name: "TeraAI Pack", type: "ai", price: "150zł/mo" }
-            ];
-
-            pkgContainer.innerHTML = packages.map(pkg => `
-                <div class="package-card ${pkg.type}" onclick="buyPackage('${pkg.name}', '${pkg.price}')">
-                    <b>${pkg.name}</b><br>
-                    <span style="font-size: 12px; color: #888;">${pkg.price}</span>
-                </div>
-            `).join('');
-        }
-
-        function buyPackage(name, price) {
-            if (name.includes('TeraAI') && !selectedVersion.includes('Pro')) {
-                alert("TeraAI packages are only available for Pro and ProAI versions!");
-                return;
-            }
-
-            alert(`Buying ${name} (${price})...`);
-            setTimeout(() => {
-                generatedCode = Math.floor(10000 + Math.random() * 90000).toString();
-                localStorage.setItem('activation_code', generatedCode);
-                alert(`SUCCESS! Your activation code is: ${generatedCode}\nEnter this code on your PC.`);
-            }, 1000);
         }
 
         function simulatePhone() {
@@ -281,81 +273,108 @@
             init();
         }
 
-        function verifyCode() {
-            const input = document.getElementById('activation-code-input').value;
-            const saved = localStorage.getItem('activation_code');
-            
-            if (input === saved && input !== "") {
-                alert("Activation Successful!");
-                nextStep('lang');
+        function chooseMethod(name, price) {
+            currentPackage = name;
+            document.getElementById('method-pkg-name').innerText = `${name} - Buying (100zł / mo)`;
+            nextStep('phone-method');
+        }
+
+        function startMethod(type) {
+            if(type === 'code') {
+                generatedCode = Math.floor(10000 + Math.random() * 90000).toString();
+                document.getElementById('generated-code-display').innerText = generatedCode;
+                localStorage.setItem('sim_code', generatedCode);
+                localStorage.setItem('sim_mode', 'code');
+                nextStep('phone-show-code');
             } else {
-                alert("Invalid Code!");
+                localStorage.setItem('sim_mode', 'qr');
+                nextStep('phone-scanning');
+                setTimeout(() => {
+                    alert("QR Scanned Successfully!");
+                    localStorage.setItem('sim_success', 'true');
+                    nextStep('success');
+                }, 3000);
             }
         }
 
-        // Listen for PC to switch automatically if code is generated (simulated)
+        // PC Logic: Polling for phone action
         setInterval(() => {
-            if (!isMobile && localStorage.getItem('activation_code') && document.getElementById('step-pc-start').classList.contains('active')) {
-                nextStep('pc-code');
+            if(!isMobile) {
+                const mode = localStorage.getItem('sim_mode');
+                const success = localStorage.getItem('sim_success');
+                
+                if(success === 'true') {
+                    nextStep('success');
+                    localStorage.clear();
+                } else if(mode === 'code' && document.getElementById('step-pc-waiting').classList.contains('active')) {
+                    nextStep('pc-code-input');
+                } else if(mode === 'qr' && document.getElementById('step-pc-waiting').classList.contains('active')) {
+                    nextStep('pc-qr-display');
+                }
             }
-        }, 2000);
+        }, 1000);
+
+        function verifyCodeOnPC() {
+            const input = document.getElementById('pc-activation-code').value;
+            const saved = localStorage.getItem('sim_code');
+            if(input === saved && input !== "") {
+                nextStep('success');
+                localStorage.clear();
+            } else {
+                alert("Incorrect code!");
+            }
+        }
 
         function nextStep(id) {
             document.querySelectorAll('.config-card').forEach(c => c.classList.remove('active'));
-            document.getElementById('step-' + id).classList.add('active');
+            const target = document.getElementById('step-' + id);
+            if(target) target.classList.add('active');
+        }
+
+        function resetSimulation() {
+            isMobile = false;
+            init();
         }
 
         function startInstallation() {
-            nextStep('none'); // Hide cards
-            const overlay = document.getElementById('install-overlay');
-            const fill = document.getElementById('progress-fill');
-            const status = document.getElementById('install-status');
-            overlay.style.display = 'flex';
-
+            nextStep('none');
+            document.getElementById('install-overlay').style.display = 'flex';
             let progress = 0;
-            const steps = [
-                { p: 20, t: "Downloading Data from ISO..." },
-                { p: 50, t: "Downloading Updates..." },
-                { p: 80, t: "Installing Drivers..." },
-                { p: 100, t: "Restarting..." }
-            ];
-
-            let stepIdx = 0;
+            const bar = document.getElementById('progress-fill');
+            const status = document.getElementById('install-status');
+            
             const timer = setInterval(() => {
                 progress += 1;
-                fill.style.width = progress + '%';
-                if (progress >= steps[stepIdx].p) {
-                    status.innerText = steps[stepIdx].t;
-                    stepIdx++;
-                }
-                if (progress >= 100) {
+                bar.style.width = progress + '%';
+                if(progress === 30) status.innerText = "Downloading ISO data...";
+                if(progress === 60) status.innerText = "Installing Drivers...";
+                if(progress === 90) status.innerText = "Finalizing...";
+                if(progress >= 100) {
                     clearInterval(timer);
-                    setTimeout(flickerAndRestart, 1000);
+                    flicker();
+                }
+            }, 50);
+        }
+
+        function flicker() {
+            let count = 0;
+            const f = setInterval(() => {
+                document.body.style.background = (count % 2 === 0) ? "black" : "white";
+                count++;
+                if(count > 10) {
+                    clearInterval(f);
+                    window.location.href = "newnewdesktop.html";
                 }
             }, 100);
         }
 
-        function flickerAndRestart() {
-            let count = 0;
-            const timer = setInterval(() => {
-                document.body.style.background = count % 2 === 0 ? "black" : "white";
-                count++;
-                if (count >= 10) {
-                    clearInterval(timer);
-                    alert("Installation complete. Restarting to newnewdesktop.html");
-                    window.location.href = "newnewdesktop.html";
-                }
-            }, 200);
-        }
-
-        // Auto-start install if next from wifi
-        window.nextStepOriginal = nextStep;
-        window.nextStep = (id) => {
-            if (id === 'install') startInstallation();
-            else nextStepOriginal(id);
-        };
-
         init();
     </script>
+    <style>
+        @keyframes scanLine { 
+            0% { top: 0; } 
+            100% { top: 100%; } 
+        }
+    </style>
 </body>
 </html>
