@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BinaryOS Configuration</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background: #ffffff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255, 0, 255, 0.4), rgba(128, 0, 128, 0.4));
+            animation: moveBubbles 15s infinite ease-in-out;
+            filter: blur(20px);
+        }
+
+        @keyframes moveBubbles {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(100px, -100px) scale(1.2); }
+        }
+
+        .config-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            width: 450px;
+            z-index: 10;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .config-card.active { display: flex; }
+
+        h2 { margin: 0; font-weight: 300; color: #333; }
+        
+        select, input {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 25px;
+            border: none;
+            background: #0078d4;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover { background: #005a9e; }
+        .btn-skip { background: #888; margin-top: 10px; }
+        
+        .link-text { color: #888; font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+        .wifi-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wifi-item:hover { background: #f9f9f9; }
+
+        #install-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        #progress-fill { width: 0%; height: 100%; background: #0078d4; transition: 0.5s; }
+    </style>
+</head>
+<body>
+    <div id="bubble-container"></div>
+
+    <!-- 1. LANGUAGE -->
+    <div class="config-card active" id="step-lang">
+        <h2>Select Language</h2>
+        <select id="lang-select">
+            <option value="en">English (Default)</option>
+            <option value="pl">Polski</option>
+            <option value="cn">中文</option>
+            <option value="cn-s">中文 (简体)</option>
+            <option value="jp">日本語</option>
+            <option value="ua">Українська</option>
+            <option value="ru">Русский</option>
+        </select>
+        <button class="btn" onclick="nextStep('user')">Next</button>
+    </div>
+
+    <!-- 2. USERNAME -->
+    <div class="config-card" id="step-user">
+        <h2>Who's going to use this PC?</h2>
+        <input type="text" id="username-input" placeholder="Username">
+        <button class="btn" onclick="nextStep('pass')">Next</button>
+    </div>
+
+    <!-- 3. PASSWORD -->
+    <div class="config-card" id="step-pass">
+        <h2>Create a password</h2>
+        <input type="password" id="password-input" placeholder="Password">
+        <button class="btn" onclick="nextStep('theme')">Next</button>
+        <button class="btn btn-skip" onclick="nextStep('theme')">Skip</button>
+    </div>
+
+    <!-- 4. THEME -->
+    <div class="config-card" id="step-theme">
+        <h2>Choose your mode</h2>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="flex: 1; background: #eee; color: #333;" onclick="setTheme('light')">Light Mode</button>
+            <button class="btn" style="flex: 1; background: #333;" onclick="setTheme('dark')">Dark Mode</button>
+        </div>
+    </div>
+
+    <!-- 5. WIFI -->
+    <div class="config-card" id="step-wifi">
+        <h2>Connect to WiFi</h2>
+        <div class="wifi-item" onclick="connectWifi('56284')"><span>📶 56284</span><span>🔒</span></div>
+        <div class="wifi-item" onclick="connectWifi('GamerWifi')"><span>📶 GamerWifi</span><span>🔒</span></div>
+        <div class="wifi-item" onclick="connectWifi('TpLink')"><span>📶 TpLink</span><span>🔓</span></div>
+        <button class="btn btn-skip" onclick="nextStep('login')">Skip WiFi</button>
+    </div>
+
+    <!-- 6. LOGIN / ACCOUNT -->
+    <div class="config-card" id="step-login">
+        <h2>Sign in to BinaryAccount</h2>
+        <input type="email" id="login-email" placeholder="email@binary.os">
+        <input type="password" id="login-pass" placeholder="Password">
+        <button class="btn" onclick="processLogin('binary')">Sign In</button>
+        <p class="link-text">Forgot password?</p>
+        <p class="link-text" onclick="nextStep('other-accounts')">I had an account on other systems</p>
+        <p class="link-text" onclick="nextStep('create-account')">Create new account</p>
+    </div>
+
+    <!-- 7. OTHER ACCOUNTS -->
+    <div class="config-card" id="step-other-accounts">
+        <h2>Import Account</h2>
+        <button class="btn" style="background: #764ba2;" onclick="processLogin('ximi')">XimiAccount</button>
+        <button class="btn" style="background: #3498db; margin-top: 10px;" onclick="processLogin('hype')">HypeAccount</button>
+        <button class="btn btn-skip" onclick="nextStep('login')">Back</button>
+    </div>
+
+    <!-- 8. CREATE ACCOUNT -->
+    <div class="config-card" id="step-create-account">
+        <h2>Create BinaryAccount</h2>
+        <input type="text" id="new-email-prefix" placeholder="username">
+        <span style="color: #888;">@binary.os</span>
+        <input type="password" id="new-pass" placeholder="Password">
+        <button class="btn" onclick="createBinaryAccount()">Create & Sign In</button>
+    </div>
+
+    <!-- 9. RESTORE / CLOUD -->
+    <div class="config-card" id="step-restore">
+        <h2 id="restore-title">Restoring Data...</h2>
+        <p id="restore-text">Would you like to restore your files and settings from the cloud?</p>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="flex: 1;" onclick="nextStep('version')">Yes, restore</button>
+            <button class="btn btn-skip" style="flex: 1;" onclick="nextStep('version')">No, start fresh</button>
+        </div>
+    </div>
+
+    <!-- 10. VERSION SELECT -->
+    <div class="config-card" id="step-version">
+        <h2>Choose your version</h2>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="wifi-item" onclick="selectVersion('Pro')"><b>BinaryOS Pro</b> (proakcess)</div>
+            <div class="wifi-item" onclick="selectVersion('ProAI')"><b>BinaryOS ProAI</b> (proaiakcess)</div>
+            <div class="wifi-item" onclick="selectVersion('Home')"><b>BinaryOS Home</b> (homeakcess)</div>
+            <div class="wifi-item" onclick="selectVersion('Lite')"><b>BinaryOS Lite</b> (liteakcess)</div>
+        </div>
+    </div>
+
+    <!-- 11. KEY INPUT -->
+    <div class="config-card" id="step-key">
+        <h2 id="key-title">Enter Product Key</h2>
+        <input type="text" id="key-input" placeholder="xxxx-xxxx-xxxx">
+        <button class="btn" onclick="validateKey()">Activate</button>
+    </div>
+
+    <!-- INSTALL OVERLAY -->
+    <div id="install-overlay">
+        <h2 id="install-title">Preparing installation...</h2>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+        <p id="install-status">Copying files from ISO...</p>
+    </div>
+
+    <script>
+        // BUBBLES
+        const container = document.getElementById('bubble-container');
+        for(let i=0; i<15; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const size = Math.random() * 200 + 100 + 'px';
+            b.style.width = size; b.style.height = size;
+            b.style.left = Math.random() * 100 + '%';
+            b.style.top = Math.random() * 100 + '%';
+            b.style.animationDelay = Math.random() * 5 + 's';
+            container.appendChild(b);
+        }
+
+        let isWifiConnected = false;
+        let selectedVersion = '';
+        let userData = {
+            username: '',
+            password: '',
+            email: '',
+            theme: 'light'
+        };
+
+        function nextStep(id) {
+            document.querySelectorAll('.config-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('step-' + id).classList.add('active');
+        }
+
+        function setTheme(t) {
+            userData.theme = t;
+            nextStep('wifi');
+        }
+
+        function connectWifi(name) {
+            if(name === 'TpLink') {
+                alert("Connected to TpLink!");
+                isWifiConnected = true;
+                nextStep('login');
+            } else {
+                const pass = prompt("Enter password for " + name);
+                if(pass === "yourwifi" || pass === "1234") {
+                    alert("Connected!");
+                    isWifiConnected = true;
+                    nextStep('login');
+                } else {
+                    alert("Wrong password!");
+                }
+            }
+        }
+
+        function processLogin(type) {
+            if(!isWifiConnected) {
+                alert("Internet connection required for login!");
+                return;
+            }
+            // Mock check
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            
+            if(type === 'binary') {
+                if(email.includes('@binary.os') && pass.length > 3) {
+                    userData.email = email;
+                    nextStep('restore');
+                } else {
+                    alert("Invalid BinaryAccount credentials!");
+                }
+            } else {
+                alert("Checking " + type + "Account records...");
+                setTimeout(() => {
+                    alert("Account found! Importing data...");
+                    nextStep('restore');
+                }, 1500);
+            }
+        }
+
+        function createBinaryAccount() {
+            const prefix = document.getElementById('new-email-prefix').value;
+            const pass = document.getElementById('new-pass').value;
+            if(prefix && pass) {
+                userData.email = prefix + "@binary.os";
+                alert("Creating cloud storage for " + prefix + "...");
+                nextStep('restore');
+            }
+        }
+
+        function selectVersion(v) {
+            selectedVersion = v;
+            document.getElementById('key-title').innerText = "Enter " + v + " Product Key";
+            nextStep('key');
+        }
+
+        function validateKey() {
+            const key = document.getElementById('key-input').value.toLowerCase();
+            const validKeys = {
+                'Pro': 'proakcess',
+                'ProAI': 'proaiakcess',
+                'Home': 'homeakcess',
+                'Lite': 'liteakcess'
+            };
+
+            if(key === validKeys[selectedVersion]) {
+                startInstallation();
+            } else {
+                alert("Invalid Product Key for " + selectedVersion);
+            }
+        }
+
+        function startInstallation() {
+            document.querySelectorAll('.config-card').forEach(c => c.classList.remove('active'));
+            const overlay = document.getElementById('install-overlay');
+            const fill = document.getElementById('progress-fill');
+            const status = document.getElementById('install-status');
+            overlay.style.display = 'flex';
+
+            let progress = 0;
+            const steps = [
+                { p: 20, t: "Downloading data from ISO..." },
+                { p: 40, t: "Downloading updates..." },
+                { p: 60, t: selectedVersion.includes('Pro') ? "Enabling advanced AI features..." : "Skipping AI features (Pro required)..." },
+                { p: 80, t: "Installing drivers..." },
+                { p: 100, t: "Finalizing..." }
+            ];
+
+            let currentStep = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                fill.style.width = progress + '%';
+                
+                if(progress >= steps[currentStep].p) {
+                    status.innerText = steps[currentStep].t;
+                    currentStep++;
+                }
+
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(screenFlicker, 1000);
+                }
+            }, 100);
+        }
+
+        function screenFlicker() {
+            let count = 0;
+            const interval = setInterval(() => {
+                document.body.style.background = document.body.style.background === 'black' ? 'white' : 'black';
+                count++;
+                if(count >= 10) { // 5 times on/off
+                    clearInterval(interval);
+                    document.body.style.background = 'black';
+                    document.getElementById('install-title').innerText = "Restarting...";
+                    setTimeout(() => {
+                        alert("BinaryOS has been installed. Restarting system...");
+                        location.reload(); // Simulate restart
+                    }, 2000);
+                }
+            }, 200);
+        }
+    </script>
+</body>
+</html>
