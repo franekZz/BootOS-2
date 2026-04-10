@@ -148,6 +148,28 @@
             outline: 1px dotted #fff;
         }
 
+        /* CONTEXT MENU */
+        #bios-ctx-menu {
+            position: fixed;
+            background: #cccccc;
+            color: #000000;
+            border: 2px solid #ffffff;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.5);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .ctx-item {
+            padding: 5px 20px;
+            cursor: pointer;
+        }
+
+        .ctx-item:hover {
+            background: #0000aa;
+            color: #ffffff;
+        }
+
         #reading-overlay {
             position: fixed;
             top: 0;
@@ -230,8 +252,22 @@
 
     <div id="modal-final" class="modal">
         <div class="modal-header">Final Selection</div>
-        <div class="file-item" id="klop-file" data-action="select-klop">klop.byl</div>
+        <div class="file-item" id="klop-file" data-action="select-klop" oncontextmenu="showBiosCtx(event)">klop.byl</div>
+        <div id="selected-code-hint" style="font-size: 10px; color: #444; margin-top: 5px;">Code: SYSTEMBYLNEWGENERACION...</div>
         <button id="confirm-btn" class="save-btn" style="margin-top: 10px; display: none;" data-action="finish">Zatwierdź</button>
+    </div>
+
+    <!-- BIOS CONTEXT MENU -->
+    <div id="bios-ctx-menu">
+        <div class="ctx-item" onclick="openEditCode()">Edytuj</div>
+    </div>
+
+    <!-- EDIT CODE MODAL -->
+    <div id="modal-edit-code" class="modal">
+        <div class="modal-header">Edit Code Configuration</div>
+        <div class="file-item focused" id="code-opt-1" onclick="selectCode(1)">1. SYSTEMBYLNEWGENERACION[BINARYBYL]VERYFY (Domyślny)</div>
+        <div class="file-item" id="code-opt-2" onclick="selectCode(2)">2. SYSTEMBYL[BINARYOSBYL]WERYFY</div>
+        <div class="file-item" id="code-opt-3" onclick="selectCode(3)">3. SYSTEMBYL[BINARYOS]WERYFY</div>
     </div>
 
     <div id="reading-overlay">
@@ -248,6 +284,7 @@
         let focusedIndex = 0;
         let activeModal = null;
         let tabs = ['accessibility', 'update', 'systems'];
+        let selectedCode = 1;
 
         function updateClock() {
             const now = new Date();
@@ -319,7 +356,7 @@
             if (activeModal) {
                 return Array.from(activeModal.querySelectorAll('.file-item, .save-btn')).filter(el => el.style.display !== 'none');
             }
-            return Array.from(document.querySelectorAll('.bios-option, .save-btn, .systems .nav-tab[data-action="add-system"]'));
+            return Array.from(document.querySelectorAll('.bios-option, .save-btn, [data-action="add-system"]'));
         }
 
         document.addEventListener('keydown', (e) => {
@@ -380,6 +417,33 @@
             render();
         }
 
+        function showBiosCtx(e) {
+            e.preventDefault();
+            const menu = document.getElementById('bios-ctx-menu');
+            menu.style.display = 'flex';
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            
+            document.addEventListener('click', () => {
+                menu.style.display = 'none';
+            }, { once: true });
+        }
+
+        function openEditCode() {
+            openModal('modal-edit-code');
+        }
+
+        function selectCode(num) {
+            selectedCode = num;
+            const hint = document.getElementById('selected-code-hint');
+            if(num === 1) hint.innerText = "Code: SYSTEMBYLNEWGENERACION...";
+            if(num === 2) hint.innerText = "Code: SYSTEMBYL[BINARYOSBYL]...";
+            if(num === 3) hint.innerText = "Code: SYSTEMBYL[BINARYOS]...";
+            
+            alert("Kod zmieniony na opcję " + num);
+            openModal('modal-final');
+        }
+
         function selectKlop() {
             document.getElementById('klop-file').classList.add('selected');
             document.getElementById('confirm-btn').style.display = 'block';
@@ -387,12 +451,16 @@
         }
 
         function finishAddSystem() {
-            systems.push({ name: 'Unknown System', id: 'unknown' });
+            let sysName = "Unknown System";
+            if (selectedCode === 2) sysName = "Plik Byl";
+            if (selectedCode === 3) sysName = "BinaryOS New Generacion";
+            
+            systems.push({ name: sysName, id: 'unknown' });
             closeModal();
         }
 
         function saveAndExit() {
-            if (systems[0].name === 'Unknown System') {
+            if (systems[0].name === 'Unknown System' || systems[0].name === 'Plik Byl' || systems[0].name === 'BinaryOS New Generacion') {
                 document.getElementById('reading-overlay').style.display = 'flex';
             } else {
                 location.reload();
