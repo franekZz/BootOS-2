@@ -3,337 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BinaryOS Full Configuration</title>
+    <title>BinaryOS Configuration</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --accent-color: #0078d4;
-            --secondary-color: #888888;
-            --input-bg: #ffffff;
-            --input-border: #dddddd;
+            --bg-color: white;
+            --text-color: #333;
+            --primary: #9c27b0;
+            --secondary: #673ab7;
         }
 
         body.dark-mode {
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --card-bg: rgba(40, 40, 40, 0.9);
-            --accent-color: #00a2ff;
-            --secondary-color: #aaaaaa;
-            --input-bg: #333333;
-            --input-border: #555555;
+            --bg-color: #121212;
+            --text-color: #f0f0f0;
         }
 
-        body, html {
+        body {
             margin: 0;
             padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
-            overflow: hidden;
+            height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transition: 0.5s;
+            justify-content: center;
+            overflow: hidden;
+            transition: background 0.5s ease;
         }
 
-        #bubble-container {
+        /* Bubble Animation */
+        .bubbles {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
+            z-index: -1;
             pointer-events: none;
         }
 
         .bubble {
             position: absolute;
+            background: linear-gradient(45deg, #e040fb, #7c4dff);
             border-radius: 50%;
-            background: linear-gradient(45deg, rgba(255, 0, 255, 0.3), rgba(128, 0, 128, 0.3));
-            animation: moveBubbles 15s infinite ease-in-out;
-            filter: blur(30px);
+            opacity: 0.3;
+            filter: blur(40px);
+            animation: move 20s infinite alternate ease-in-out;
         }
 
-        @keyframes moveBubbles {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, -100px) scale(1.3); }
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 100px) scale(1.5); }
         }
 
-        .config-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(15px);
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 450px;
-            z-index: 10;
             text-align: center;
             display: none;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeIn 0.5s forwards;
+            animation: fadeIn 0.5s ease;
         }
 
-        .config-card.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card.active { display: block; }
 
-        h2 { margin: 0; font-weight: 300; }
-        input, select { padding: 12px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-color); outline: none; }
-        
-        .btn { padding: 12px 30px; border-radius: 25px; border: none; background: var(--accent-color); color: white; cursor: pointer; transition: 0.3s; font-weight: 600; }
-        .btn:hover { transform: scale(1.05); }
-        .btn-skip { background: #888; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        .package-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .package-card { background: var(--input-bg); border: 1px solid var(--input-border); padding: 15px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
-        .package-card:hover { border-color: var(--accent-color); transform: translateY(-5px); }
+        h1 { font-weight: 300; margin-bottom: 30px; }
 
-        #install-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .progress-bar { width: 300px; height: 4px; background: #333; border-radius: 2px; margin: 20px 0; overflow: hidden; }
-        #progress-fill { width: 0%; height: 100%; background: var(--accent-color); transition: 0.5s; }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+        }
 
-        #qr-code-sim { width: 150px; height: 150px; background: #000; margin: 10px auto; border: 5px solid white; display: flex; flex-wrap: wrap; }
-        .qr-pixel { width: 10%; height: 10%; background: #000; }
-        .qr-pixel.w { background: #fff; }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn:hover { transform: scale(1.05); background: var(--secondary); }
+        .btn-skip { background: #555; margin-left: 10px; }
+
+        .wifi-list { text-align: left; margin-top: 20px; }
+        .wifi-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .wifi-item:hover { background: rgba(0,0,0,0.05); }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #flicker-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            z-index: 9999;
+            display: none;
+        }
     </style>
 </head>
-<body id="main-body">
-    <div id="bubble-container"></div>
+<body>
+    <div class="bubbles" id="bubble-container"></div>
+    <div id="flicker-overlay"></div>
 
-    <!-- STEP 1: DEVICE DETECTION / ACTIVATION WAIT (PC) -->
-    <div class="config-card active" id="step-pc-wait">
-        <h2>License Activation</h2>
-        <p>Your IP: <b>192.168.1.45</b></p>
-        <p>Please open this page on your <b>phone</b> to activate BinaryOS.</p>
-        <div style="width: 60px; height: 60px; background: #333; margin: 10px auto;"></div>
-        <button class="btn" style="background:#666; font-size: 12px;" onclick="simulatePhone()">[ TEST ] Simulate Phone</button>
-    </div>
-
-    <!-- STEP 2: PHONE VIEW (PACKAGES) -->
-    <div class="config-card" id="step-phone-packages">
-        <h2>Phone Detected</h2>
-        <p style="color: #27ae60; font-size: 12px;">IP Match: 192.168.1.45</p>
-        <div class="package-grid">
-            <div class="package-card" onclick="chooseMethod('Basic')"><b>Basic</b><br><small>50zł</small></div>
-            <div class="package-card" onclick="chooseMethod('ProAI')"><b>ProAI</b><br><small>100zł</small></div>
-        </div>
-    </div>
-
-    <!-- STEP 3: PHONE VIEW (METHOD) -->
-    <div class="config-card" id="step-phone-method">
-        <h2>Choose Method</h2>
-        <button class="btn" onclick="startMethod('code')">Get 5-Digit Code</button>
-        <button class="btn" style="background:#27ae60; margin-top:10px;" onclick="startMethod('qr')">Show QR Code</button>
-    </div>
-
-    <!-- STEP 4: PHONE VIEW (SHOW CODE) -->
-    <div class="config-card" id="step-phone-code">
-        <h2>Your Code</h2>
-        <h1 id="generated-code" style="letter-spacing: 5px; color: var(--accent-color);">00000</h1>
-        <p>Enter this on your PC.</p>
-    </div>
-
-    <!-- STEP 5: PC VIEW (ENTER CODE) -->
-    <div class="config-card" id="step-pc-enter-code">
-        <h2>Enter Activation Code</h2>
-        <input type="text" id="pc-code-input" placeholder="00000" maxlength="5" style="text-align: center; font-size: 24px;">
-        <button class="btn" style="margin-top:10px;" onclick="verifyCode()">Verify</button>
-    </div>
-
-    <!-- STEP 6: PC VIEW (QR DISPLAY) -->
-    <div class="config-card" id="step-pc-qr">
-        <h2>Scan QR Code</h2>
-        <div id="qr-code-sim"></div>
-        <p>Waiting for phone scan...</p>
-    </div>
-
-    <!-- STEP 7: LANGUAGE -->
-    <div class="config-card" id="step-lang">
-        <h2>Select Language</h2>
-        <select onchange="updateLang(this.value)">
-            <option value="en">English (Default)</option>
+    <!-- Step 1: Language -->
+    <div class="card active" id="step1">
+        <h1 data-i18n="welcome">Welcome to BinaryOS</h1>
+        <p data-i18n="selectLang">Select your language</p>
+        <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
             <option value="pl">Polski</option>
-            <option value="cn">中文</option>
-            <option value="jp">日本語</option>
-            <option value="ua">Українська</option>
+            <option value="zh">Chinese</option>
+            <option value="zh-hans">Chinese (Simplified)</option>
+            <option value="ja">Japanese</option>
+            <option value="uk">Ukrainian</option>
+            <option value="ru">Russian</option>
         </select>
-        <button class="btn" onclick="nextStep('user')">Next</button>
+        <button class="btn" onclick="nextStep(2)" data-i18n="next">Next</button>
     </div>
 
-    <!-- STEP 8: USERNAME -->
-    <div class="config-card" id="step-user">
-        <h2>User Name</h2>
-        <input type="text" id="username" placeholder="Username">
-        <button class="btn" onclick="nextStep('pass')">Next</button>
+    <!-- Step 2: Activation (PC View) -->
+    <div class="card" id="step2">
+        <h1 data-i18n="activation">System Activation</h1>
+        <p data-i18n="phoneConnect">Connect phone to same network</p>
+        <div id="qr-code" style="background: white; width: 150px; height: 150px; margin: 20px auto; display: flex; align-items: center; justify-content: center; color: black; font-weight: bold;">QR CODE</div>
+        <p data-i18n="enterCode">Or enter 5-digit code</p>
+        <input type="text" id="activationCode" maxlength="5" placeholder="00000" style="text-align: center; font-size: 24px;">
+        <button class="btn" onclick="verifyCode()" data-i18n="verify">Verify</button>
     </div>
 
-    <!-- STEP 9: PASSWORD -->
-    <div class="config-card" id="step-pass">
-        <h2>Create Password</h2>
-        <input type="password" id="password" placeholder="Password">
-        <button class="btn" onclick="nextStep('theme')">Next</button>
-        <button class="btn btn-skip" onclick="nextStep('theme')">Skip</button>
+    <!-- Step 3: Username -->
+    <div class="card" id="step3">
+        <h1 data-i18n="username">User Name</h1>
+        <input type="text" id="userName" placeholder="Enter name...">
+        <button class="btn" onclick="nextStep(4)" data-i18n="next">Next</button>
     </div>
 
-    <!-- STEP 10: THEME -->
-    <div class="config-card" id="step-theme">
-        <h2>System Theme</h2>
-        <button class="btn" style="background:#eee; color:#333;" onclick="setTheme('light')">Light Mode</button>
-        <button class="btn" style="background:#333; margin-top:10px;" onclick="setTheme('dark')">Dark Mode</button>
+    <!-- Step 4: Password -->
+    <div class="card" id="step4">
+        <h1 data-i18n="password">Password</h1>
+        <input type="password" id="pcPass" placeholder="Password...">
+        <button class="btn" onclick="nextStep(5)" data-i18n="next">Next</button>
+        <button class="btn btn-skip" onclick="nextStep(5)" data-i18n="skip">Skip</button>
     </div>
 
-    <!-- STEP 11: WIFI -->
-    <div class="config-card" id="step-wifi">
-        <h2>Connect to WiFi</h2>
-        <div class="package-card" onclick="connectWifi('GamerWifi')">📶 GamerWifi</div>
-        <div class="package-card" style="margin-top:10px;" onclick="connectWifi('TpLink')">📶 TpLink (Open)</div>
-        <button class="btn btn-skip" style="margin-top:10px;" onclick="alert('WiFi Required!')">Skip</button>
+    <!-- Step 5: Theme -->
+    <div class="card" id="step5">
+        <h1 data-i18n="theme">Choose your theme</h1>
+        <button class="btn" onclick="setTheme('light')" data-i18n="light">Light Mode</button>
+        <button class="btn" style="background: #333;" onclick="setTheme('dark')" data-i18n="dark">Dark Mode</button>
+        <br><button class="btn" onclick="nextStep(6)" data-i18n="next">Next</button>
     </div>
 
-    <!-- STEP 12: LOGIN -->
-    <div class="config-card" id="step-login">
-        <h2>BinaryAccount Login</h2>
+    <!-- Step 6: WiFi -->
+    <div class="card" id="step6">
+        <h1 data-i18n="wifi">Select WiFi</h1>
+        <div class="wifi-list">
+            <div class="wifi-item" onclick="nextStep(7)">56284</div>
+            <div class="wifi-item" onclick="nextStep(7)">GamerWifi</div>
+            <div class="wifi-item" onclick="nextStep(7)">TpLink (Open)</div>
+        </div>
+        <button class="btn btn-skip" onclick="nextStep(7)" data-i18n="skip">Skip</button>
+    </div>
+
+    <!-- Step 7: Accounts -->
+    <div class="card" id="step7">
+        <h1 data-i18n="login">Login to BinaryAccount</h1>
         <input type="text" placeholder="name@binary.os">
-        <input type="password" placeholder="Password" style="margin-top:10px;">
-        <button class="btn" style="margin-top:10px;" onclick="nextStep('restore')">Sign In</button>
-        <p style="font-size: 12px; color: #888; cursor: pointer;">Forgot Password</p>
-        <p style="font-size: 12px; color: #0078d4; cursor: pointer;" onclick="nextStep('import')">I had an account on other systems</p>
+        <input type="password" placeholder="Password">
+        <button class="btn" onclick="nextStep(8)" data-i18n="next">Next</button>
+        <p style="cursor:pointer; font-size:0.8em;" data-i18n="otherAccount">I had an account on other systems</p>
     </div>
 
-    <!-- STEP 13: IMPORT -->
-    <div class="config-card" id="step-import">
-        <h2>Import Account</h2>
-        <button class="btn" style="background:#764ba2;" onclick="nextStep('restore')">XimiAccount</button>
-        <button class="btn" style="background:#3498db; margin-top:10px;" onclick="nextStep('restore')">HypeAccount</button>
+    <!-- Step 8: Cloud Restore -->
+    <div class="card" id="step8">
+        <h1 data-i18n="restore">Restore from cloud?</h1>
+        <button class="btn" onclick="nextStep(9)" data-i18n="yes">Yes</button>
+        <button class="btn btn-skip" onclick="nextStep(9)" data-i18n="no">No</button>
     </div>
 
-    <!-- STEP 14: RESTORE -->
-    <div class="config-card" id="step-restore">
-        <h2>Restore Data?</h2>
-        <p>Restore files and settings from cloud?</p>
-        <button class="btn" onclick="nextStep('version')">Yes, Restore</button>
-        <button class="btn btn-skip" style="margin-top:10px;" onclick="nextStep('version')">No, Start Fresh</button>
+    <!-- Step 9: System Version -->
+    <div class="card" id="step9">
+        <h1>Select BinaryOS Version</h1>
+        <select id="verSelect">
+            <option value="pro">Pro</option>
+            <option value="proai">ProAI</option>
+            <option value="home">Home</option>
+            <option value="lite">Lite</option>
+        </select>
+        <button class="btn" onclick="startInstall()" data-i18n="next">Next</button>
     </div>
 
-    <!-- STEP 15: VERSION -->
-    <div class="config-card" id="step-version">
-        <h2>Choose Version</h2>
-        <div class="package-card" onclick="startInstall('Pro')">BinaryOS Pro (proakcess)</div>
-        <div class="package-card" style="margin-top:10px;" onclick="startInstall('Home')">BinaryOS Home (homeakcess)</div>
-    </div>
-
-    <div id="install-overlay">
-        <h2 id="install-title">Installing...</h2>
-        <div class="progress-bar"><div id="progress-fill"></div></div>
-        <p id="install-status">Preparing...</p>
+    <!-- Step 10: Final Installation -->
+    <div class="card" id="step10">
+        <h1 id="install-text" data-i18n="installing">Installing BinaryOS...</h1>
+        <div class="progress-container">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
+        <p id="install-subtext" data-i18n="drivers">Installing drivers...</p>
     </div>
 
     <script>
-        // BUBBLES
+        const translations = {
+            en: { welcome: "Welcome to BinaryOS", selectLang: "Select language", next: "Next", skip: "Skip", activation: "Activation", phoneConnect: "Connect phone to same network", enterCode: "Enter code", verify: "Verify", username: "User Name", password: "Password", theme: "Theme", light: "Light", dark: "Dark", wifi: "WiFi", login: "Login", otherAccount: "Old Account?", restore: "Restore Cloud?", yes: "Yes", no: "No", installing: "Installing BinaryOS...", drivers: "Installing drivers...", updates: "Checking updates...", finishing: "Finishing...", restart: "Restarting..." },
+            pl: { welcome: "Witaj w BinaryOS", selectLang: "Wybierz język", next: "Dalej", skip: "Pomiń", activation: "Aktywacja", phoneConnect: "Połącz telefon z tą samą siecią", enterCode: "Wpisz kod", verify: "Weryfikuj", username: "Użytkownik", password: "Hasło", theme: "Motyw", light: "Jasny", dark: "Ciemny", wifi: "WiFi", login: "Zaloguj", otherAccount: "Miałeś inne konto?", restore: "Przywrócić dane?", yes: "Tak", no: "Nie", installing: "Instalowanie BinaryOS...", drivers: "Instalowanie sterowników...", updates: "Sprawdzanie aktualizacji...", finishing: "Kończenie...", restart: "Uruchamianie ponownie..." }
+            // Dodaj pozostałe języki tutaj...
+        };
+
+        let currentLang = 'en';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+        }
+
+        function nextStep(step) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dark') document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+        }
+
+        function verifyCode() {
+            const code = document.getElementById('activationCode').value;
+            if (code.length === 5) nextStep(3);
+            else alert("Invalid code!");
+        }
+
+        function startInstall() {
+            nextStep(10);
+            let bar = document.getElementById('p-bar');
+            let text = document.getElementById('install-text');
+            let sub = document.getElementById('install-subtext');
+            let width = 0;
+            
+            let interval = setInterval(() => {
+                width += 1;
+                bar.style.width = width + "%";
+                
+                if (width === 30) sub.innerText = translations[currentLang].updates;
+                if (width === 60) sub.innerText = translations[currentLang].finishing;
+                if (width === 90) {
+                    clearInterval(interval);
+                    flickerScreen();
+                }
+            }, 100);
+        }
+
+        function flickerScreen() {
+            let overlay = document.getElementById('flicker-overlay');
+            let count = 0;
+            let flick = setInterval(() => {
+                overlay.style.display = (overlay.style.display === 'block' ? 'none' : 'block');
+                count++;
+                if (count >= 10) {
+                    clearInterval(flick);
+                    window.location.href = "newnewdesktop.html";
+                }
+            }, 200);
+        }
+
+        // Create Bubbles
         const container = document.getElementById('bubble-container');
-        for(let i=0; i<20; i++) {
+        for (let i = 0; i < 15; i++) {
             const b = document.createElement('div');
             b.className = 'bubble';
-            const size = Math.random() * 150 + 50 + 'px';
-            b.style.width = size; b.style.height = size;
+            b.style.width = Math.random() * 300 + 100 + 'px';
+            b.style.height = b.style.width;
             b.style.left = Math.random() * 100 + '%';
             b.style.top = Math.random() * 100 + '%';
             b.style.animationDelay = Math.random() * 5 + 's';
             container.appendChild(b);
-        }
-
-        // QR
-        const qr = document.getElementById('qr-code-sim');
-        for(let i=0; i<100; i++) {
-            const p = document.createElement('div');
-            p.className = 'qr-pixel' + (Math.random() > 0.5 ? ' w' : '');
-            qr.appendChild(p);
-        }
-
-        let isMobile = false;
-        let simCode = "";
-
-        function nextStep(id) {
-            document.querySelectorAll('.config-card').forEach(c => c.classList.remove('active'));
-            document.getElementById('step-' + id).classList.add('active');
-        }
-
-        function simulatePhone() { isMobile = true; nextStep('phone-packages'); }
-
-        function chooseMethod(pkg) {
-            alert("Buying " + pkg + " (100zł/mo)");
-            nextStep('phone-method');
-        }
-
-        function startMethod(m) {
-            if(m === 'code') {
-                simCode = Math.floor(10000 + Math.random() * 90000).toString();
-                document.getElementById('generated-code').innerText = simCode;
-                localStorage.setItem('sim_code', simCode);
-                localStorage.setItem('sim_mode', 'code');
-                nextStep('phone-code');
-            } else {
-                localStorage.setItem('sim_mode', 'qr');
-                setTimeout(() => { 
-                    alert("QR Scanned!"); 
-                    localStorage.setItem('sim_success', 'true');
-                    nextStep('lang');
-                }, 3000);
-            }
-        }
-
-        // PC Polling
-        setInterval(() => {
-            if(!isMobile) {
-                const mode = localStorage.getItem('sim_mode');
-                const success = localStorage.getItem('sim_success');
-                if(success === 'true') { localStorage.clear(); nextStep('lang'); }
-                else if(mode === 'code' && document.getElementById('step-pc-wait').classList.contains('active')) nextStep('pc-enter-code');
-                else if(mode === 'qr' && document.getElementById('step-pc-wait').classList.contains('active')) nextStep('pc-qr');
-            }
-        }, 1000);
-
-        function verifyCode() {
-            if(document.getElementById('pc-code-input').value === localStorage.getItem('sim_code')) {
-                localStorage.clear();
-                nextStep('lang');
-            } else alert("Wrong code!");
-        }
-
-        function updateLang(l) { alert("Language set to " + l); }
-        function setTheme(t) { 
-            if(t === 'dark') document.getElementById('main-body').classList.add('dark-mode');
-            else document.getElementById('main-body').classList.remove('dark-mode');
-            nextStep('wifi');
-        }
-        function connectWifi(n) { alert("Connected to " + n); nextStep('login'); }
-
-        function startInstall(v) {
-            nextStep('none');
-            document.getElementById('install-overlay').style.display = 'flex';
-            let p = 0;
-            const fill = document.getElementById('progress-fill');
-            const status = document.getElementById('install-status');
-            const t = setInterval(() => {
-                p++;
-                fill.style.width = p + '%';
-                if(p === 20) status.innerText = "Copying files from ISO...";
-                if(p === 50) status.innerText = "Downloading updates...";
-                if(p === 80) status.innerText = "Installing drivers...";
-                if(p >= 100) { clearInterval(t); flicker(); }
-            }, 50);
-        }
-
-        function flicker() {
-            let c = 0;
-            const f = setInterval(() => {
-                document.body.style.background = (c % 2 === 0) ? "#000" : "#fff";
-                c++;
-                if(c > 10) { clearInterval(f); window.location.href = "newnewdesktop.html"; }
-            }, 100);
         }
     </script>
 </body>
