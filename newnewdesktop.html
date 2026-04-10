@@ -20,6 +20,18 @@
             color: white;
         }
 
+        /* Lock Screen */
+        #lockscreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, #1a0033, #4a0080);
+            z-index: 999999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+        #ls-time { font-size: 80px; margin-bottom: 10px; }
+        #ls-date { font-size: 20px; opacity: 0.7; margin-bottom: 50px; }
+        .ls-login-box { display: none; flex-direction: column; align-items: center; gap: 15px; }
+
         /* Bubbles */
         .bubbles {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -48,7 +60,6 @@
             position: absolute; user-select: none;
         }
         .icon:hover { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
-        .icon.selected { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); }
         .icon-img { font-size: 40px; margin-bottom: 5px; }
         .icon-text { font-size: 12px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
@@ -57,26 +68,6 @@
             position: fixed; border: 1px solid rgba(156, 39, 176, 0.5);
             background: rgba(156, 39, 176, 0.1); display: none; z-index: 10000;
         }
-
-        /* Context Menu */
-        #context-menu {
-            position: fixed; background: var(--bg-glass); backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass); border-radius: 10px;
-            width: 200px; display: none; flex-direction: column; padding: 5px;
-            z-index: 20000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .cm-item {
-            padding: 8px 12px; border-radius: 6px; cursor: pointer;
-            display: flex; align-items: center; justify-content: space-between;
-            font-size: 13px; transition: 0.2s;
-        }
-        .cm-item:hover { background: rgba(255, 255, 255, 0.1); }
-        .cm-submenu {
-            position: absolute; left: 100%; top: 0; background: var(--bg-glass);
-            border: 1px solid var(--border-glass); border-radius: 10px;
-            width: 180px; display: none; flex-direction: column; padding: 5px;
-        }
-        .cm-item:hover > .cm-submenu { display: flex; }
 
         /* Taskbar */
         #taskbar {
@@ -107,26 +98,20 @@
         .win-close { background: #ff5f56; }
         .win-content { flex: 1; padding: 20px; overflow-y: auto; }
 
-        /* Settings Sidebar */
-        .settings-layout { display: flex; height: 100%; }
-        .settings-sidebar { width: 180px; border-right: 1px solid var(--border-glass); padding-right: 10px; }
-        .settings-main { flex: 1; padding-left: 20px; }
-        .side-btn {
-            padding: 10px; margin-bottom: 5px; border-radius: 8px; cursor: pointer;
-            transition: 0.2s; font-size: 14px;
+        /* Context Menu */
+        #context-menu {
+            position: fixed; background: var(--bg-glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass); border-radius: 10px;
+            width: 200px; display: none; flex-direction: column; padding: 5px;
+            z-index: 20000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .side-btn:hover, .side-btn.active { background: var(--primary); }
+        .cm-item {
+            padding: 8px 12px; border-radius: 6px; cursor: pointer;
+            font-size: 13px; transition: 0.2s;
+        }
+        .cm-item:hover { background: rgba(255, 255, 255, 0.1); }
 
-        /* Tera AI */
-        .ai-chat { display: flex; flex-direction: column; height: 100%; }
-        .ai-messages { flex: 1; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 10px; max-width: 80%; font-size: 14px; }
-        .msg.bot { background: var(--primary-dark); align-self: flex-start; }
-        .msg.user { background: rgba(255, 255, 255, 0.1); align-self: flex-end; }
-        .ai-input-wrap { display: flex; gap: 10px; }
-        .ai-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); padding: 10px; border-radius: 10px; color: white; }
-
-        /* Fake Cursor for Intro */
+        /* Fake Cursor */
         #fake-cursor {
             position: fixed; width: 20px; height: 20px; background: white;
             border-radius: 50%; z-index: 99999; pointer-events: none;
@@ -135,44 +120,34 @@
     </style>
 </head>
 <body oncontextmenu="openContextMenu(event)">
+    <!-- Lock Screen -->
+    <div id="lockscreen">
+        <div id="ls-time">12:00</div>
+        <div id="ls-date">Friday, April 10</div>
+        
+        <div class="ls-login-box" id="ls-login">
+            <div style="width:80px; height:80px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px;">👤</div>
+            <div id="ls-username" style="font-size:24px;">User</div>
+            <input type="password" id="ls-pass-input" placeholder="Password" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:10px 20px; border-radius:20px; color:white; text-align:center; outline:none;">
+            <button onclick="unlock()" style="background:var(--primary); border:none; color:white; padding:8px 25px; border-radius:15px; cursor:pointer;">Unlock</button>
+        </div>
+        <div id="ls-hint" style="position:absolute; bottom:30px; opacity:0.6;">Click to unlock</div>
+    </div>
+
     <div class="bubbles" id="bubble-container"></div>
     <div id="fake-cursor"></div>
     <div id="selection-box"></div>
 
-    <!-- Context Menu -->
-    <div id="context-menu">
-        <div class="cm-item" onclick="refreshDesktop()">
-            <span data-i18n="refresh">Refresh</span>
-        </div>
-        <div class="cm-item">
-            <span data-i18n="new">New</span> <span>▶</span>
-            <div class="cm-submenu">
-                <div class="cm-item" onclick="createNew('folder')">Folder</div>
-                <div class="cm-item" onclick="createNew('text')">Text Document</div>
-            </div>
-        </div>
-        <div style="height: 1px; background: var(--border-glass); margin: 5px 0;"></div>
-        <div class="cm-item" onclick="openApp('settings')">
-            <span data-i18n="settings">Settings</span>
-        </div>
-        <div class="cm-item" onclick="openApp('tera')">
-            <span data-i18n="tera">Tera AI</span>
-        </div>
-    </div>
-
     <!-- Desktop -->
     <div id="desktop" onmousedown="startSelection(event)">
         <div class="icon" style="top: 30px; left: 30px;" ondblclick="openApp('explorer')">
-            <div class="icon-img">📂</div>
-            <div class="icon-text">Explorer</div>
+            <div class="icon-img">📂</div><div class="icon-text">Explorer</div>
         </div>
         <div class="icon" style="top: 30px; left: 130px;" ondblclick="openApp('tera')">
-            <div class="icon-img">✨</div>
-            <div class="icon-text">Tera AI</div>
+            <div class="icon-img">✨</div><div class="icon-text">Tera AI</div>
         </div>
         <div class="icon" style="top: 140px; left: 30px;" ondblclick="openApp('settings')">
-            <div class="icon-img">⚙️</div>
-            <div class="icon-text">Settings</div>
+            <div class="icon-img">⚙️</div><div class="icon-text">Settings</div>
         </div>
     </div>
 
@@ -184,243 +159,142 @@
         <div class="tb-icon" onclick="openApp('settings')">⚙️</div>
     </div>
 
-    <!-- Tera AI Window -->
-    <div id="win-tera" class="window" style="width: 500px; height: 600px; top: 10%; left: 30%;">
-        <div class="win-header" onmousedown="dragWindow(event, 'win-tera')">
-            <span>✨ Tera AI Assistant</span>
-            <div class="win-controls">
-                <button class="win-btn win-close" onclick="closeApp('tera')"></button>
-            </div>
+    <!-- Windows -->
+    <div id="win-explorer" class="window" style="width: 600px; height: 400px; top: 15%; left: 20%;">
+        <div class="win-header" onmousedown="dragWindow(event, 'win-explorer')">
+            <span>📂 Explorer</span>
+            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('explorer')"></button></div>
         </div>
-        <div class="win-content ai-chat">
-            <div class="ai-messages" id="ai-messages"></div>
-            <div class="ai-input-wrap">
-                <input type="text" id="ai-input" class="ai-input" placeholder="Ask Tera anything..." onkeydown="if(event.key==='Enter') sendTeraMsg()">
-                <button onclick="sendTeraMsg()" style="background: var(--primary); border:none; color:white; padding: 0 15px; border-radius:10px;">Send</button>
-            </div>
-            <p id="trial-info" style="font-size: 10px; color: #aaa; margin-top: 5px;">Trial: 10 messages left</p>
-        </div>
+        <div class="win-content">Welcome to BinaryOS Explorer.</div>
     </div>
 
-    <!-- Settings Window -->
-    <div id="win-settings" class="window" style="width: 700px; height: 500px; top: 15%; left: 20%;">
+    <div id="win-tera" class="window" style="width: 500px; height: 600px; top: 10%; left: 30%;">
+        <div class="win-header" onmousedown="dragWindow(event, 'win-tera')">
+            <span>✨ Tera AI</span>
+            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('tera')"></button></div>
+        </div>
+        <div class="win-content">Tera AI is ready.</div>
+    </div>
+
+    <div id="win-settings" class="window" style="width: 650px; height: 450px; top: 20%; left: 25%;">
         <div class="win-header" onmousedown="dragWindow(event, 'win-settings')">
-            <span data-i18n="settings">Settings</span>
-            <div class="win-controls">
-                <button class="win-btn win-close" onclick="closeApp('settings')"></button>
-            </div>
+            <span>⚙️ Settings</span>
+            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('settings')"></button></div>
         </div>
-        <div class="win-content">
-            <div class="settings-layout">
-                <div class="settings-sidebar">
-                    <div class="side-btn active" onclick="showSection('sys')" data-i18n="system">System</div>
-                    <div class="side-btn" onclick="showSection('acc')" data-i18n="account">Account</div>
-                    <div class="side-btn" onclick="showSection('storage')" data-i18n="storage">Storage</div>
-                    <div class="side-btn" onclick="showSection('lang')" data-i18n="language">Language</div>
-                </div>
-                <div class="settings-main">
-                    <!-- System -->
-                    <div id="sec-sys" class="settings-section">
-                        <h2 data-i18n="sys_info">System Information</h2>
-                        <p>OS: BinaryOS New Generation</p>
-                        <p>Version: 2.0.1 Premium</p>
-                    </div>
-                    <!-- Account -->
-                    <div id="sec-acc" class="settings-section" style="display:none;">
-                        <h2 data-i18n="account">Account</h2>
-                        <p>User: <span id="user-display">User</span></p>
-                        <button class="side-btn" data-i18n="change_pass">Change Password</button>
-                    </div>
-                    <!-- Storage -->
-                    <div id="sec-storage" class="settings-section" style="display:none;">
-                        <h2 data-i18n="storage">Storage & Cloud</h2>
-                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px;">
-                            <p><b>30 TB Cloud Storage</b></p>
-                            <p>Premium ExtraPlus Tier</p>
-                            <p style="color: #e040fb;">3000 ZŁ / Lifetime</p>
-                            <button onclick="alert('Purchased!')" style="background: var(--primary); border:none; color:white; padding: 8px 15px; border-radius:5px;">Buy Now</button>
-                        </div>
-                    </div>
-                    <!-- Language -->
-                    <div id="sec-lang" class="settings-section" style="display:none;">
-                        <h2 data-i18n="language">Language</h2>
-                        <select onchange="updateLang(this.value)" id="lang-select" style="width: 100%; padding: 10px; background: #222; color: white; border: 1px solid #444;">
-                            <option value="en">English</option>
-                            <option value="pl">Polski</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="win-content">Settings loaded.</div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu">
+        <div class="cm-item" onclick="location.reload()">Refresh</div>
+        <div class="cm-item" onclick="openApp('settings')">Settings</div>
     </div>
 
     <script>
-        const translations = {
-            en: {
-                refresh: "Refresh", new: "New", settings: "Settings", tera: "Tera AI",
-                system: "System", account: "Account", storage: "Storage", language: "Language",
-                sys_info: "System Information", change_pass: "Change Password"
-            },
-            pl: {
-                refresh: "Odśwież", new: "Nowy", settings: "Ustawienia", tera: "Tera AI",
-                system: "System", account: "Konto", storage: "Pamięć", language: "Język",
-                sys_info: "Informacje o systemie", change_pass: "Zmień Hasło"
-            }
-        };
-
-        function updateLang(lang) {
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (translations[lang][key]) el.innerText = translations[lang][key];
-            });
-            localStorage.setItem('binary_lang', lang);
-        }
-
-        function openContextMenu(e) {
-            e.preventDefault();
-            const cm = document.getElementById('context-menu');
-            cm.style.display = 'flex';
-            cm.style.left = e.pageX + 'px';
-            cm.style.top = e.pageY + 'px';
-        }
-
-        window.onclick = () => document.getElementById('context-menu').style.display = 'none';
-
-        function openApp(id) {
-            document.getElementById('win-' + id).style.display = 'flex';
-        }
-        function closeApp(id) {
-            document.getElementById('win-' + id).style.display = 'none';
-        }
-
-        function showSection(id) {
-            document.querySelectorAll('.settings-section').forEach(s => s.style.display = 'none');
-            document.getElementById('sec-' + id).style.display = 'block';
-            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        // Tera AI Logic
-        let trialMsgs = 10;
-        function sendTeraMsg() {
-            const input = document.getElementById('ai-input');
-            const msg = input.value.trim();
-            if (!msg) return;
-            if (trialMsgs <= 0) {
-                alert("Trial ended! Upgrade to Pro for more messages.");
-                return;
-            }
-
-            addMsg(msg, 'user');
-            input.value = '';
-            trialMsgs--;
-            document.getElementById('trial-info').innerText = `Trial: ${trialMsgs} messages left`;
-
-            setTimeout(() => {
-                addMsg("Hey! I'm Tera. I can help you with anything in BinaryOS.", 'bot');
-            }, 1000);
-        }
-
-        function addMsg(text, type) {
-            const box = document.getElementById('ai-messages');
-            const m = document.createElement('div');
-            m.className = `msg ${type}`;
-            m.innerText = text;
-            box.appendChild(m);
-            box.scrollTop = box.scrollHeight;
-        }
-
-        // Desktop Selection
-        let isSelecting = false, startX, startY;
-        function startSelection(e) {
-            if (e.target !== document.getElementById('desktop')) return;
-            isSelecting = true;
-            startX = e.pageX; startY = e.pageY;
-            const box = document.getElementById('selection-box');
-            box.style.display = 'block';
-            box.style.left = startX + 'px';
-            box.style.top = startY + 'px';
-            box.style.width = '0'; box.style.height = '0';
-        }
-
-        window.onmousemove = (e) => {
-            if (!isSelecting) return;
-            const box = document.getElementById('selection-box');
-            const curX = e.pageX, curY = e.pageY;
-            box.style.width = Math.abs(curX - startX) + 'px';
-            box.style.height = Math.abs(curY - startY) + 'px';
-            box.style.left = Math.min(curX, startX) + 'px';
-            box.style.top = Math.min(curY, startY) + 'px';
-        };
-
-        window.onmouseup = () => {
-            isSelecting = false;
-            document.getElementById('selection-box').style.display = 'none';
-        };
-
-        // Window Dragging
+        // Window Dragging Logic (Fixed)
         let activeWin = null, offX, offY;
         function dragWindow(e, id) {
             activeWin = document.getElementById(id);
+            // Z-Index Management
+            document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
+            activeWin.style.zIndex = "1001";
+            
             offX = e.clientX - activeWin.offsetLeft;
             offY = e.clientY - activeWin.offsetTop;
-            window.onmousemove = (me) => {
+            
+            function onMouseMove(me) {
                 if (!activeWin) return;
                 activeWin.style.left = (me.clientX - offX) + 'px';
                 activeWin.style.top = (me.clientY - offY) + 'px';
-            };
+            }
+            
+            function onMouseUp() {
+                activeWin = null;
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            }
+            
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
         }
+
+        function openApp(id) {
+            const win = document.getElementById('win-' + id);
+            if(win) {
+                win.style.display = 'flex';
+                document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
+                win.style.zIndex = "1001";
+            }
+        }
+        function closeApp(id) { document.getElementById('win-' + id).style.display = 'none'; }
+        function toggleStart() { alert("Start Menu - BinaryOS"); }
+
+        // Lock Screen Logic
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('ls-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        }
+        setInterval(updateTime, 1000); updateTime();
+
+        const ls = document.getElementById('lockscreen');
+        const lsLogin = document.getElementById('ls-login');
+        const lsHint = document.getElementById('ls-hint');
+        
+        ls.onclick = () => {
+            const savedPass = localStorage.getItem('pc_password');
+            if (savedPass && savedPass !== "") {
+                lsLogin.style.display = 'flex';
+                lsHint.style.display = 'none';
+            } else {
+                unlock();
+            }
+        };
+
+        function unlock() {
+            const savedPass = localStorage.getItem('pc_password');
+            const inputPass = document.getElementById('ls-pass-input').value;
+            if (!savedPass || savedPass === "" || inputPass === savedPass) {
+                ls.style.transform = 'translateY(-100%)';
+                setTimeout(() => ls.style.display = 'none', 800);
+            } else {
+                alert("Incorrect password!");
+            }
+        }
+
+        // Context Menu
+        function openContextMenu(e) {
+            e.preventDefault();
+            const cm = document.getElementById('context-menu');
+            cm.style.display = 'flex'; cm.style.left = e.pageX + 'px'; cm.style.top = e.pageY + 'px';
+        }
+        window.onclick = () => document.getElementById('context-menu').style.display = 'none';
+
+        // Selection Box
+        let isSelecting = false, startX, startY;
+        function startSelection(e) {
+            if (e.target !== document.getElementById('desktop')) return;
+            isSelecting = true; startX = e.pageX; startY = e.pageY;
+            const box = document.getElementById('selection-box');
+            box.style.display = 'block'; box.style.left = startX+'px'; box.style.top = startY+'px';
+            box.style.width = '0'; box.style.height = '0';
+        }
+        window.onmousemove = (e) => {
+            if (!isSelecting) return;
+            const box = document.getElementById('selection-box');
+            box.style.width = Math.abs(e.pageX - startX) + 'px';
+            box.style.height = Math.abs(e.pageY - startY) + 'px';
+            box.style.left = Math.min(e.pageX, startX) + 'px';
+            box.style.top = Math.min(e.pageY, startY) + 'px';
+        };
+        window.onmouseup = () => { isSelecting = false; document.getElementById('selection-box').style.display = 'none'; };
 
         // Bubbles
         const bc = document.getElementById('bubble-container');
-        for(let i=0; i<10; i++) {
-            const b = document.createElement('div');
-            b.className = 'bubble';
-            const size = Math.random() * 200 + 100;
-            b.style.width = size + 'px'; b.style.height = size + 'px';
-            b.style.left = Math.random() * 100 + '%'; b.style.top = Math.random() * 100 + '%';
-            b.style.animationDelay = Math.random() * 5 + 's';
-            bc.appendChild(b);
-        }
-
-        // Intro Animation
-        window.onload = () => {
-            const cur = document.getElementById('fake-cursor');
-            cur.style.display = 'block';
-            cur.style.left = '50%'; cur.style.top = '100%';
-            
-            // Move to Tera icon
-            setTimeout(() => {
-                cur.style.transition = 'all 1.5s ease-in-out';
-                cur.style.left = '150px'; cur.style.top = '50px';
-                setTimeout(() => {
-                    openApp('tera');
-                    cur.style.display = 'none';
-                    setTimeout(() => {
-                        addMsg("Hello", 'user');
-                        setTimeout(() => addMsg("Hey", 'bot'), 1000);
-                    }, 1000);
-                }, 1600);
-            }, 500);
-
-            // Load saved lang
-            const saved = localStorage.getItem('binary_lang') || 'en';
-            document.getElementById('lang-select').value = saved;
-            updateLang(saved);
-        };
-
-        function refreshDesktop() {
-            document.body.style.opacity = '0.5';
-            setTimeout(() => document.body.style.opacity = '1', 300);
-        }
-
-        function createNew(type) {
-            const name = type === 'folder' ? 'New Folder' : 'New Document.txt';
-            const icon = document.createElement('div');
-            icon.className = 'icon';
-            icon.style.top = '250px'; icon.style.left = '30px';
-            icon.innerHTML = `<div class="icon-img">${type === 'folder' ? '📂' : '📄'}</div><div class="icon-text">${name}</div>`;
-            document.getElementById('desktop').appendChild(icon);
+        for(let i=0; i<12; i++) {
+            const b = document.createElement('div'); b.className = 'bubble';
+            const size = Math.random()*200+100; b.style.width=size+'px'; b.style.height=size+'px';
+            b.style.left=Math.random()*100+'%'; b.style.top=Math.random()*100+'%';
+            b.style.animationDelay=Math.random()*5+'s'; bc.appendChild(b);
         }
     </script>
 </body>
