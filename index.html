@@ -178,6 +178,22 @@
             window.location.href = "jezyk.html";
         }
 
+        // BIOS TRIGGER (3x DEL)
+        let delCount = 0;
+        let delTimer;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete') {
+                delCount++;
+                clearTimeout(delTimer);
+                if (delCount >= 3) {
+                    window.location.href = "bios.html";
+                }
+                delTimer = setTimeout(() => {
+                    delCount = 0;
+                }, 1000);
+            }
+        });
+
         // URUCHOM START
         window.onload = startLoading;
     </script>
