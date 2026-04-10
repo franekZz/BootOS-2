@@ -27,10 +27,11 @@
             z-index: 999999; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+            cursor: pointer;
         }
-        #ls-time { font-size: 80px; margin-bottom: 10px; }
-        #ls-date { font-size: 20px; opacity: 0.7; margin-bottom: 50px; }
-        .ls-login-box { display: none; flex-direction: column; align-items: center; gap: 15px; }
+        #ls-time { font-size: 80px; margin-bottom: 10px; pointer-events: none; }
+        #ls-date { font-size: 20px; opacity: 0.7; margin-bottom: 50px; pointer-events: none; }
+        .ls-login-box { display: none; flex-direction: column; align-items: center; gap: 15px; pointer-events: auto; }
 
         /* Bubbles */
         .bubbles {
@@ -60,8 +61,8 @@
             position: absolute; user-select: none;
         }
         .icon:hover { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
-        .icon-img { font-size: 40px; margin-bottom: 5px; }
-        .icon-text { font-size: 12px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .icon-img { font-size: 40px; margin-bottom: 5px; pointer-events: none; }
+        .icon-text { font-size: 12px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none; }
 
         /* Selection Box */
         #selection-box {
@@ -88,15 +89,36 @@
             border: 1px solid var(--border-glass); border-radius: 15px;
             display: none; flex-direction: column; z-index: 1000;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden;
+            min-width: 300px; min-height: 200px;
         }
         .win-header {
             padding: 10px 15px; display: flex; justify-content: space-between;
             align-items: center; background: rgba(255, 255, 255, 0.05); cursor: move;
+            user-select: none;
         }
         .win-controls { display: flex; gap: 8px; }
         .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
         .win-close { background: #ff5f56; }
         .win-content { flex: 1; padding: 20px; overflow-y: auto; }
+
+        /* Settings Sidebar */
+        .settings-layout { display: flex; height: 100%; }
+        .settings-sidebar { width: 180px; border-right: 1px solid var(--border-glass); padding-right: 10px; }
+        .settings-main { flex: 1; padding-left: 20px; }
+        .side-btn {
+            padding: 10px; margin-bottom: 5px; border-radius: 8px; cursor: pointer;
+            transition: 0.2s; font-size: 14px; border: none; background: transparent; color: white; width: 100%; text-align: left;
+        }
+        .side-btn:hover, .side-btn.active { background: var(--primary); }
+
+        /* Tera AI */
+        .ai-chat { display: flex; flex-direction: column; height: 100%; }
+        .ai-messages { flex: 1; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 10px; max-width: 80%; font-size: 14px; }
+        .msg.bot { background: var(--primary-dark); align-self: flex-start; }
+        .msg.user { background: rgba(255, 255, 255, 0.1); align-self: flex-end; }
+        .ai-input-wrap { display: flex; gap: 10px; }
+        .ai-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); padding: 10px; border-radius: 10px; color: white; outline: none; }
 
         /* Context Menu */
         #context-menu {
@@ -111,7 +133,6 @@
         }
         .cm-item:hover { background: rgba(255, 255, 255, 0.1); }
 
-        /* Fake Cursor */
         #fake-cursor {
             position: fixed; width: 20px; height: 20px; background: white;
             border-radius: 50%; z-index: 99999; pointer-events: none;
@@ -127,11 +148,11 @@
         
         <div class="ls-login-box" id="ls-login">
             <div style="width:80px; height:80px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px;">👤</div>
-            <div id="ls-username" style="font-size:24px;">User</div>
-            <input type="password" id="ls-pass-input" placeholder="Password" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:10px 20px; border-radius:20px; color:white; text-align:center; outline:none;">
-            <button onclick="unlock()" style="background:var(--primary); border:none; color:white; padding:8px 25px; border-radius:15px; cursor:pointer;">Unlock</button>
+            <div id="ls-username" style="font-size:24px; margin: 10px 0;">User</div>
+            <input type="password" id="ls-pass-input" placeholder="Password" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:12px 20px; border-radius:20px; color:white; text-align:center; outline:none; margin-bottom: 10px;">
+            <button onclick="unlock()" style="background:var(--primary); border:none; color:white; padding:10px 30px; border-radius:20px; cursor:pointer; font-weight: bold;">Unlock</button>
         </div>
-        <div id="ls-hint" style="position:absolute; bottom:30px; opacity:0.6;">Click to unlock</div>
+        <div id="ls-hint" style="position:absolute; bottom:30px; opacity:0.6;">Click anywhere to unlock</div>
     </div>
 
     <div class="bubbles" id="bubble-container"></div>
@@ -159,43 +180,145 @@
         <div class="tb-icon" onclick="openApp('settings')">⚙️</div>
     </div>
 
-    <!-- Windows -->
+    <!-- Explorer Window -->
     <div id="win-explorer" class="window" style="width: 600px; height: 400px; top: 15%; left: 20%;">
         <div class="win-header" onmousedown="dragWindow(event, 'win-explorer')">
             <span>📂 Explorer</span>
             <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('explorer')"></button></div>
         </div>
-        <div class="win-content">Welcome to BinaryOS Explorer.</div>
+        <div class="win-content">
+            <h3>Local Disk (C:)</h3>
+            <p>System files and folders are here.</p>
+        </div>
     </div>
 
+    <!-- Tera AI Window -->
     <div id="win-tera" class="window" style="width: 500px; height: 600px; top: 10%; left: 30%;">
         <div class="win-header" onmousedown="dragWindow(event, 'win-tera')">
-            <span>✨ Tera AI</span>
+            <span>✨ Tera AI Assistant</span>
             <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('tera')"></button></div>
         </div>
-        <div class="win-content">Tera AI is ready.</div>
+        <div class="win-content ai-chat">
+            <div class="ai-messages" id="ai-messages"></div>
+            <div class="ai-input-wrap">
+                <input type="text" id="ai-input" class="ai-input" placeholder="Ask Tera anything..." onkeydown="if(event.key==='Enter') sendTeraMsg()">
+                <button onclick="sendTeraMsg()" style="background: var(--primary); border:none; color:white; padding: 0 15px; border-radius:10px; cursor: pointer;">Send</button>
+            </div>
+            <p id="trial-info" style="font-size: 10px; color: #aaa; margin-top: 5px;">Trial: 10 messages left</p>
+        </div>
     </div>
 
-    <div id="win-settings" class="window" style="width: 650px; height: 450px; top: 20%; left: 25%;">
+    <!-- Settings Window -->
+    <div id="win-settings" class="window" style="width: 750px; height: 550px; top: 10%; left: 15%;">
         <div class="win-header" onmousedown="dragWindow(event, 'win-settings')">
-            <span>⚙️ Settings</span>
+            <span data-i18n="settings">Settings</span>
             <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('settings')"></button></div>
         </div>
-        <div class="win-content">Settings loaded.</div>
+        <div class="win-content">
+            <div class="settings-layout">
+                <div class="settings-sidebar">
+                    <div class="side-btn active" onclick="showSection('sys')" data-i18n="system">System</div>
+                    <div class="side-btn" onclick="showSection('pers')" data-i18n="personalization">Personalization</div>
+                    <div class="side-btn" onclick="showSection('acc')" data-i18n="account">Account</div>
+                    <div class="side-btn" onclick="showSection('sec')" data-i18n="security">Security</div>
+                    <div class="side-btn" onclick="showSection('storage')" data-i18n="storage">Storage</div>
+                    <div class="side-btn" onclick="showSection('upd')" data-i18n="updates">Updates</div>
+                    <div class="side-btn" onclick="showSection('lang')" data-i18n="language">Language</div>
+                </div>
+                <div class="settings-main">
+                    <div id="sec-sys" class="settings-section">
+                        <h2 data-i18n="sys_info">System Information</h2>
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                            <p><b>OS:</b> BinaryOS New Generation</p>
+                            <p><b>Version:</b> 2.0.1 Premium</p>
+                            <p><b>Processor:</b> Tera Core AI v4</p>
+                        </div>
+                    </div>
+                    <div id="sec-pers" class="settings-section" style="display:none;">
+                        <h2 data-i18n="personalization">Personalization</h2>
+                        <p data-i18n="wallpaper">Wallpaper URL:</p>
+                        <input type="text" id="wall-url" class="ai-input" style="width: 100%;">
+                        <button class="side-btn" style="margin-top:10px; background: var(--primary);" onclick="document.body.style.background=`url(${document.getElementById('wall-url').value}) center/cover`" data-i18n="apply">Apply</button>
+                    </div>
+                    <div id="sec-acc" class="settings-section" style="display:none;">
+                        <h2 data-i18n="account">Account & Premium</h2>
+                        <p id="premium-tag" style="color: #e040fb; font-weight: bold;">Trial Member</p>
+                        <h3 data-i18n="tera_plans">Tera AI Premium Plans</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="background: rgba(156,39,176,0.1); padding: 10px; border-radius: 8px;">
+                                <b>Pro</b> (1k msg) - 100 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('Pro')">Buy</button>
+                            </div>
+                            <div style="background: rgba(156,39,176,0.2); padding: 10px; border-radius: 8px;">
+                                <b>Extra</b> (5k msg) - 700 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('Extra')">Buy</button>
+                            </div>
+                            <div style="background: rgba(156,39,176,0.3); padding: 10px; border-radius: 8px; grid-column: span 2;">
+                                <b>ExtraPlus</b> (Unlimited + 100TB) - 190 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('ExtraPlus')">Buy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="sec-sec" class="settings-section" style="display:none;">
+                        <h2 data-i18n="security">Security</h2>
+                        <button class="side-btn" style="background: var(--primary);" data-i18n="change_pass">Change Password</button>
+                    </div>
+                    <div id="sec-storage" class="settings-section" style="display:none;">
+                        <h2 data-i18n="storage">Storage Plans</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">500 GB - 50 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">1 TB - 100 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">2 TB - 200 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">4 TB - 400 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
+                            <div style="background: rgba(156,39,176,0.2); padding: 10px; border-radius: 8px; grid-column: span 2;">30 TB - 3000 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
+                        </div>
+                    </div>
+                    <div id="sec-upd" class="settings-section" style="display:none;">
+                        <h2 data-i18n="updates">Updates</h2>
+                        <p style="color: #27c93f;">✓ System is up to date.</p>
+                    </div>
+                    <div id="sec-lang" class="settings-section" style="display:none;">
+                        <h2 data-i18n="language">Language</h2>
+                        <select onchange="updateLang(this.value)" id="lang-select" style="width:100%; padding:10px; background:#222; color:white; border: 1px solid #444; border-radius: 5px;">
+                            <option value="en">English</option>
+                            <option value="pl">Polski</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Context Menu -->
     <div id="context-menu">
         <div class="cm-item" onclick="location.reload()">Refresh</div>
         <div class="cm-item" onclick="openApp('settings')">Settings</div>
+        <div class="cm-item" onclick="createNew('folder')">New Folder</div>
+        <div class="cm-item" onclick="createNew('text')">New Text File</div>
     </div>
 
     <script>
-        // Window Dragging Logic (Fixed)
+        // Core Variables
         let activeWin = null, offX, offY;
+        let trialMsgs = 10;
+        const translations = {
+            en: { refresh: "Refresh", new: "New", settings: "Settings", tera: "Tera AI", system: "System", personalization: "Personalization", account: "Account", security: "Security", storage: "Storage", updates: "Updates", language: "Language", sys_info: "System Info", change_pass: "Change Password", wallpaper: "Wallpaper", apply: "Apply", tera_plans: "Tera AI Plans" },
+            pl: { refresh: "Odśwież", new: "Nowy", settings: "Ustawienia", tera: "Tera AI", system: "System", personalization: "Personalizacja", account: "Konto", security: "Bezpieczeństwo", storage: "Pamięć", updates: "Aktualizacje", language: "Język", sys_info: "Info o systemie", change_pass: "Zmień Hasło", wallpaper: "Tapeta", apply: "Zastosuj", tera_plans: "Plany Tera AI" }
+        };
+
+        // Window Management
+        function openApp(id) {
+            const win = document.getElementById('win-' + id);
+            if(win) {
+                win.style.display = 'flex';
+                // Bring to front
+                document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
+                win.style.zIndex = "1001";
+            }
+        }
+        function closeApp(id) { document.getElementById('win-' + id).style.display = 'none'; }
+        function toggleStart() { alert("BinaryOS - Start Menu"); }
+
+        // Window Dragging (Płynne i poprawione)
         function dragWindow(e, id) {
             activeWin = document.getElementById(id);
-            // Z-Index Management
             document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
             activeWin.style.zIndex = "1001";
             
@@ -218,17 +341,6 @@
             window.addEventListener('mouseup', onMouseUp);
         }
 
-        function openApp(id) {
-            const win = document.getElementById('win-' + id);
-            if(win) {
-                win.style.display = 'flex';
-                document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
-                win.style.zIndex = "1001";
-            }
-        }
-        function closeApp(id) { document.getElementById('win-' + id).style.display = 'none'; }
-        function toggleStart() { alert("Start Menu - BinaryOS"); }
-
         // Lock Screen Logic
         function updateTime() {
             const now = new Date();
@@ -240,13 +352,15 @@
         const lsLogin = document.getElementById('ls-login');
         const lsHint = document.getElementById('ls-hint');
         
-        ls.onclick = () => {
-            const savedPass = localStorage.getItem('pc_password');
-            if (savedPass && savedPass !== "") {
-                lsLogin.style.display = 'flex';
-                lsHint.style.display = 'none';
-            } else {
-                unlock();
+        ls.onclick = (e) => {
+            if(e.target === ls || e.target === lsHint) {
+                const savedPass = localStorage.getItem('pc_password');
+                if (savedPass && savedPass !== "") {
+                    lsLogin.style.display = 'flex';
+                    lsHint.style.display = 'none';
+                } else {
+                    unlock();
+                }
             }
         };
 
@@ -261,7 +375,53 @@
             }
         }
 
-        // Context Menu
+        // Settings Logic
+        function showSection(id) {
+            document.querySelectorAll('.settings-section').forEach(s => s.style.display = 'none');
+            document.getElementById('sec-' + id).style.display = 'block';
+            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function updateLang(lang) {
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+            localStorage.setItem('binary_lang', lang);
+        }
+
+        function buyPlan(plan) {
+            alert("Purchased " + plan + "!");
+            document.getElementById('premium-tag').innerText = plan + " Member";
+            if(plan === 'ExtraPlus') {
+                trialMsgs = 999999;
+                document.getElementById('trial-info').innerText = "Unlimited Messages (ExtraPlus)";
+            }
+        }
+
+        // Tera AI Logic
+        function sendTeraMsg() {
+            const input = document.getElementById('ai-input');
+            const msg = input.value.trim();
+            if (!msg || trialMsgs <= 0) return;
+            addMsg(msg, 'user');
+            input.value = '';
+            trialMsgs--;
+            document.getElementById('trial-info').innerText = `Trial: ${trialMsgs} messages left`;
+            setTimeout(() => addMsg("Hey! I'm Tera AI. How can I help you?", 'bot'), 1000);
+        }
+
+        function addMsg(text, type) {
+            const box = document.getElementById('ai-messages');
+            const m = document.createElement('div');
+            m.className = `msg ${type}`;
+            m.innerText = text;
+            box.appendChild(m);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Desktop Utilities
         function openContextMenu(e) {
             e.preventDefault();
             const cm = document.getElementById('context-menu');
@@ -269,7 +429,6 @@
         }
         window.onclick = () => document.getElementById('context-menu').style.display = 'none';
 
-        // Selection Box
         let isSelecting = false, startX, startY;
         function startSelection(e) {
             if (e.target !== document.getElementById('desktop')) return;
@@ -288,14 +447,39 @@
         };
         window.onmouseup = () => { isSelecting = false; document.getElementById('selection-box').style.display = 'none'; };
 
-        // Bubbles
-        const bc = document.getElementById('bubble-container');
-        for(let i=0; i<12; i++) {
-            const b = document.createElement('div'); b.className = 'bubble';
-            const size = Math.random()*200+100; b.style.width=size+'px'; b.style.height=size+'px';
-            b.style.left=Math.random()*100+'%'; b.style.top=Math.random()*100+'%';
-            b.style.animationDelay=Math.random()*5+'s'; bc.appendChild(b);
+        function createNew(type) {
+            const icon = document.createElement('div');
+            icon.className = 'icon'; icon.style.top = '250px'; icon.style.left = '30px';
+            icon.innerHTML = `<div class="icon-img">${type==='folder'?'📂':'📄'}</div><div class="icon-text">New ${type}</div>`;
+            document.getElementById('desktop').appendChild(icon);
         }
+
+        // Initial Load
+        window.onload = () => {
+            // Intro Animation
+            const cur = document.getElementById('fake-cursor');
+            cur.style.display = 'block'; cur.style.left = '50%'; cur.style.top = '100%';
+            setTimeout(() => {
+                cur.style.transition = 'all 1.5s ease-in-out';
+                cur.style.left = '150px'; cur.style.top = '50px';
+                setTimeout(() => {
+                    openApp('tera'); cur.style.display = 'none';
+                    setTimeout(() => { addMsg("Hello", 'user'); setTimeout(() => addMsg("Hey", 'bot'), 1000); }, 1000);
+                }, 1600);
+            }, 500);
+
+            // Bubbles
+            const bc = document.getElementById('bubble-container');
+            for(let i=0; i<12; i++) {
+                const b = document.createElement('div'); b.className = 'bubble';
+                const size = Math.random()*200+100; b.style.width=size+'px'; b.style.height=size+'px';
+                b.style.left=Math.random()*100+'%'; b.style.top=Math.random()*100+'%';
+                b.style.animationDelay=Math.random()*5+'s'; bc.appendChild(b);
+            }
+
+            // Language
+            updateLang(localStorage.getItem('binary_lang') || 'en');
+        };
     </script>
 </body>
 </html>
