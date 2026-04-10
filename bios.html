@@ -460,9 +460,19 @@
         }
 
         function saveAndExit() {
-            if (systems[0].name === 'Unknown System' || systems[0].name === 'Plik Byl' || systems[0].name === 'BinaryOS New Generacion') {
+            const bootSystem = systems[0].name;
+            if (bootSystem === 'Unknown System' || bootSystem === 'Plik Byl' || bootSystem === 'BinaryOS New Generacion') {
+                if (selectedCode !== 1) {
+                    alert("CRITICAL BOOT ERROR: System verification failed. Only default code is supported.");
+                    location.reload();
+                    return;
+                }
                 document.getElementById('reading-overlay').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = 'newconfiguration.html';
+                }, 3000);
             } else {
+                alert("Settings saved. Restarting...");
                 location.reload();
             }
         }
