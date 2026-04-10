@@ -1130,14 +1130,60 @@
         }
 
         function openBinaryOSBrowser() {
-            if(confirm("You are about to be redirected to the BinaryOS download page. Do you want to continue?")) {
-                const overlay = document.getElementById('restart-overlay');
-                const text = document.getElementById('restart-text');
-                overlay.style.display = 'flex';
-                text.innerText = 'Redirecting to BinaryOS...';
-                setTimeout(() => {
-                    window.location.href = 'https://binaryos.vercel.app';
-                }, 2000);
+            closeApp('settings');
+            openApp('browser');
+        }
+
+        function startBinaryDownload() {
+            const btn = document.getElementById('browser-download-btn');
+            const status = document.getElementById('browser-download-status');
+            const bar = document.getElementById('browser-download-bar');
+            const text = document.getElementById('browser-download-text');
+            const file = document.getElementById('browser-downloaded-file');
+
+            btn.style.display = 'none';
+            status.style.display = 'flex';
+
+            let progress = 0;
+            const duration = 20000; // 20s
+            const interval = 200;
+            const step = (interval / duration) * 100;
+
+            const timer = setInterval(() => {
+                progress += step;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+                    status.style.display = 'none';
+                    file.style.display = 'flex';
+                    alert("Download complete! Double click BinaryOS.iso to save it.");
+                }
+                bar.style.width = progress + '%';
+                text.innerText = `Downloading... ${Math.round(progress)}%`;
+            }, interval);
+        }
+
+        let selectedSaveTargetId = null;
+        function selectSaveTarget(el, targetId) {
+            document.querySelectorAll('.save-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedSaveTargetId = targetId;
+            document.getElementById('save-binary-btn').disabled = false;
+        }
+
+        function showSaveDialog() {
+            document.getElementById('win-save-dialog').style.display = 'flex';
+        }
+
+        function saveBinaryOS() {
+            if(selectedSaveTargetId === 'pendrive') {
+                alert("BinaryOS.iso has been successfully saved to Blue Pendrive!");
+                closeApp('save-dialog');
+                closeApp('browser');
+                // You can add further logic here if needed
+            } else if(selectedSaveTargetId === 'c') {
+                alert("BinaryOS.iso has been saved to Disk C.");
+                closeApp('save-dialog');
             }
         }
 
