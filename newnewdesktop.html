@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,8 @@
             --bg-glass: rgba(25, 10, 40, 0.7);
             --border-glass: rgba(255, 255, 255, 0.1);
         }
+
+        * { box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0; height: 100%; overflow: hidden;
@@ -32,6 +34,7 @@
         #ls-time { font-size: 80px; margin-bottom: 10px; pointer-events: none; }
         #ls-date { font-size: 20px; opacity: 0.7; margin-bottom: 50px; pointer-events: none; }
         .ls-login-box { display: none; flex-direction: column; align-items: center; gap: 15px; pointer-events: auto; }
+        .ls-hint { font-size: 14px; opacity: 0.7; }
 
         /* Bubbles */
         .bubbles {
@@ -54,6 +57,28 @@
             z-index: 1; padding: 20px; box-sizing: border-box;
         }
 
+        /* Logo */
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-icon {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            font-weight: bold;
+        }
+        .logo-text {
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Desktop Icons */
         .icon {
             width: 80px; height: 90px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
@@ -76,12 +101,69 @@
             background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px);
             display: flex; justify-content: center; align-items: center; z-index: 5000;
         }
+        .tb-left, .tb-center, .tb-right {
+            display: flex; align-items: center;
+        }
+        #taskbar-inner {
+            width: 100%; max-width: 900px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 10px;
+        }
         .tb-icon {
             width: 40px; height: 40px; margin: 0 5px; display: flex;
-            align-items: center; justify-content: center; font-size: 24px;
+            align-items: center; justify-content: center; font-size: 22px;
             cursor: pointer; border-radius: 8px; transition: 0.2s;
         }
         .tb-icon:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); }
+
+        .tb-clock {
+            font-size: 13px; text-align: right; opacity: 0.8;
+        }
+
+        /* Start Menu */
+        #start-menu {
+            position: fixed;
+            bottom: 55px;
+            left: 10px;
+            width: 260px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            backdrop-filter: blur(25px);
+            padding: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 6000;
+        }
+        .start-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .start-app {
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .start-app:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .start-app-icon {
+            width: 26px; height: 26px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            font-size: 16px;
+        }
+        .start-app-text {
+            font-size: 13px;
+        }
 
         /* Windows */
         .window {
@@ -90,396 +172,349 @@
             display: none; flex-direction: column; z-index: 1000;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden;
             min-width: 300px; min-height: 200px;
+            animation: win-open 0.25s ease-out;
+        }
+        @keyframes win-open {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         .win-header {
             padding: 10px 15px; display: flex; justify-content: space-between;
             align-items: center; background: rgba(255, 255, 255, 0.05); cursor: move;
             user-select: none;
         }
-        .win-controls { display: flex; gap: 8px; }
-        .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none; }
+        .win-title {
+            font-size: 14px;
+        }
+        .win-controls { display: flex; gap: 8px; align-items: center; }
+        .win-btn {
+            width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: none;
+        }
         .win-close { background: #ff5f56; }
-        .win-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .win-min { background: #ffbd2e; }
+        .win-max { background: #27c93f; }
+        .win-content { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; }
 
-        /* Settings Sidebar */
+        /* Settings Layout */
         .settings-layout { display: flex; height: 100%; }
-        .settings-sidebar { width: 180px; border-right: 1px solid var(--border-glass); padding-right: 10px; }
+        .settings-sidebar {
+            width: 180px; border-right: 1px solid var(--border-glass);
+            padding-right: 10px;
+        }
         .settings-main { flex: 1; padding-left: 20px; }
         .side-btn {
             padding: 10px; margin-bottom: 5px; border-radius: 8px; cursor: pointer;
-            transition: 0.2s; font-size: 14px; border: none; background: transparent; color: white; width: 100%; text-align: left;
+            transition: 0.2s; font-size: 14px; border: none; background: transparent;
+            color: white; width: 100%; text-align: left;
         }
-        .side-btn:hover, .side-btn.active { background: var(--primary); }
-
-        /* Tera AI */
-        .ai-chat { display: flex; flex-direction: column; height: 100%; }
-        .ai-messages { flex: 1; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px; border-radius: 10px; max-width: 80%; font-size: 14px; }
-        .msg.bot { background: var(--primary-dark); align-self: flex-start; }
-        .msg.user { background: rgba(255, 255, 255, 0.1); align-self: flex-end; }
-        .ai-input-wrap { display: flex; gap: 10px; }
-        .ai-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); padding: 10px; border-radius: 10px; color: white; outline: none; }
-
-        /* Context Menu */
-        #context-menu {
-            position: fixed; background: var(--bg-glass); backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass); border-radius: 10px;
-            width: 200px; display: none; flex-direction: column; padding: 5px;
-            z-index: 20000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .side-btn:hover {
+            background: rgba(255,255,255,0.08);
         }
-        .cm-item {
-            padding: 8px 12px; border-radius: 6px; cursor: pointer;
-            font-size: 13px; transition: 0.2s;
-        }
-        .cm-item:hover { background: rgba(255, 255, 255, 0.1); }
 
-        #fake-cursor {
-            position: fixed; width: 20px; height: 20px; background: white;
-            border-radius: 50%; z-index: 99999; pointer-events: none;
-            box-shadow: 0 0 10px white; display: none;
+        /* Notepad */
+        #notepad-area {
+            width: 100%; height: 100%; min-height: 220px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px;
+            resize: none;
         }
     </style>
 </head>
-<body oncontextmenu="openContextMenu(event)">
+<body>
+
     <!-- Lock Screen -->
     <div id="lockscreen">
         <div id="ls-time">12:00</div>
-        <div id="ls-date">Friday, April 10</div>
-        
-        <div class="ls-login-box" id="ls-login">
-            <div style="width:80px; height:80px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px;">👤</div>
-            <div id="ls-username" style="font-size:24px; margin: 10px 0;">User</div>
-            <input type="password" id="ls-pass-input" placeholder="Password" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); padding:12px 20px; border-radius:20px; color:white; text-align:center; outline:none; margin-bottom: 10px;">
-            <button onclick="unlock()" style="background:var(--primary); border:none; color:white; padding:10px 30px; border-radius:20px; cursor:pointer; font-weight: bold;">Unlock</button>
-        </div>
-        <div id="ls-hint" style="position:absolute; bottom:30px; opacity:0.6;">Click anywhere to unlock</div>
+        <div id="ls-date">poniedziałek, 1 stycznia</div>
+        <div class="ls-hint">Kliknij, aby odblokować BinaryOS</div>
     </div>
 
-    <div class="bubbles" id="bubble-container"></div>
-    <div id="fake-cursor"></div>
-    <div id="selection-box"></div>
+    <!-- Background Bubbles -->
+    <div class="bubbles">
+        <div class="bubble" style="width: 260px; height: 260px; top: 10%; left: 5%;"></div>
+        <div class="bubble" style="width: 320px; height: 320px; bottom: 5%; right: 10%; animation-delay: 3s;"></div>
+        <div class="bubble" style="width: 200px; height: 200px; top: 50%; right: 30%; animation-delay: 6s;"></div>
+    </div>
 
     <!-- Desktop -->
-    <div id="desktop" onmousedown="startSelection(event)">
-        <div class="icon" style="top: 30px; left: 30px;" ondblclick="openApp('explorer')">
-            <div class="icon-img">📂</div><div class="icon-text">Explorer</div>
+    <div id="desktop">
+        <div class="logo">
+            <div class="logo-icon">01</div>
+            <div class="logo-text">BinaryOS</div>
         </div>
-        <div class="icon" style="top: 30px; left: 130px;" ondblclick="openApp('tera')">
-            <div class="icon-img">✨</div><div class="icon-text">Tera AI</div>
+
+        <!-- Desktop Icons -->
+        <div class="icon" style="top: 100px; left: 30px;" onclick="openWindow('notepad-window')">
+            <div class="icon-img">📝</div>
+            <div class="icon-text">Notatnik</div>
         </div>
-        <div class="icon" style="top: 140px; left: 30px;" ondblclick="openApp('settings')">
-            <div class="icon-img">⚙️</div><div class="icon-text">Settings</div>
+
+        <div class="icon" style="top: 200px; left: 30px;" onclick="openWindow('settings-window')">
+            <div class="icon-img">⚙️</div>
+            <div class="icon-text">Ustawienia</div>
+        </div>
+
+        <div class="icon" style="top: 300px; left: 30px;" onclick="openWindow('about-window')">
+            <div class="icon-img">💻</div>
+            <div class="icon-text">O BinaryOS</div>
         </div>
     </div>
+
+    <!-- Selection Box -->
+    <div id="selection-box"></div>
 
     <!-- Taskbar -->
     <div id="taskbar">
-        <div class="tb-icon" onclick="toggleStart()">🟣</div>
-        <div class="tb-icon" onclick="openApp('explorer')">📂</div>
-        <div class="tb-icon" onclick="openApp('tera')">✨</div>
-        <div class="tb-icon" onclick="openApp('settings')">⚙️</div>
+        <div id="taskbar-inner">
+            <div class="tb-left">
+                <div class="tb-icon" onclick="toggleStartMenu()">⊞</div>
+            </div>
+            <div class="tb-center">
+                <div class="tb-icon" onclick="openWindow('notepad-window')">📝</div>
+                <div class="tb-icon" onclick="openWindow('settings-window')">⚙️</div>
+                <div class="tb-icon" onclick="openWindow('about-window')">💻</div>
+            </div>
+            <div class="tb-right">
+                <div class="tb-clock">
+                    <div id="tb-time">12:00</div>
+                    <div id="tb-date">01.01.2026</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Explorer Window -->
-    <div id="win-explorer" class="window" style="width: 600px; height: 400px; top: 15%; left: 20%;">
-        <div class="win-header" onmousedown="dragWindow(event, 'win-explorer')">
-            <span>📂 Explorer</span>
-            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('explorer')"></button></div>
+    <!-- Start Menu -->
+    <div id="start-menu">
+        <div class="start-title">BinaryOS</div>
+        <div class="start-app" onclick="openWindow('notepad-window'); hideStartMenu();">
+            <div class="start-app-icon">📝</div>
+            <div class="start-app-text">Notatnik</div>
+        </div>
+        <div class="start-app" onclick="openWindow('settings-window'); hideStartMenu();">
+            <div class="start-app-icon">⚙️</div>
+            <div class="start-app-text">Ustawienia</div>
+        </div>
+        <div class="start-app" onclick="openWindow('about-window'); hideStartMenu();">
+            <div class="start-app-icon">💻</div>
+            <div class="start-app-text">O BinaryOS</div>
+        </div>
+    </div>
+
+    <!-- Windows -->
+
+    <!-- Notepad Window -->
+    <div id="notepad-window" class="window" style="width: 500px; height: 350px; top: 120px; left: 220px;">
+        <div class="win-header">
+            <span class="win-title">📝 Notatnik</span>
+            <div class="win-controls">
+                <button class="win-btn win-min" onclick="minimizeWindow('notepad-window')"></button>
+                <button class="win-btn win-close" onclick="closeWindow('notepad-window')"></button>
+            </div>
         </div>
         <div class="win-content">
-            <h3>Local Disk (C:)</h3>
-            <p>System files and folders are here.</p>
-        </div>
-    </div>
-
-    <!-- Tera AI Window -->
-    <div id="win-tera" class="window" style="width: 500px; height: 600px; top: 10%; left: 30%;">
-        <div class="win-header" onmousedown="dragWindow(event, 'win-tera')">
-            <span>✨ Tera AI Assistant</span>
-            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('tera')"></button></div>
-        </div>
-        <div class="win-content ai-chat">
-            <div class="ai-messages" id="ai-messages"></div>
-            <div class="ai-input-wrap">
-                <input type="text" id="ai-input" class="ai-input" placeholder="Ask Tera anything..." onkeydown="if(event.key==='Enter') sendTeraMsg()">
-                <button onclick="sendTeraMsg()" style="background: var(--primary); border:none; color:white; padding: 0 15px; border-radius:10px; cursor: pointer;">Send</button>
-            </div>
-            <p id="trial-info" style="font-size: 10px; color: #aaa; margin-top: 5px;">Trial: 10 messages left</p>
+            <textarea id="notepad-area" placeholder="Zapisz swoje notatki w BinaryOS..."></textarea>
         </div>
     </div>
 
     <!-- Settings Window -->
-    <div id="win-settings" class="window" style="width: 750px; height: 550px; top: 10%; left: 15%;">
-        <div class="win-header" onmousedown="dragWindow(event, 'win-settings')">
-            <span data-i18n="settings">Settings</span>
-            <div class="win-controls"><button class="win-btn win-close" onclick="closeApp('settings')"></button></div>
+    <div id="settings-window" class="window" style="width: 600px; height: 400px; top: 140px; left: 140px;">
+        <div class="win-header">
+            <span class="win-title">⚙️ Ustawienia</span>
+            <div class="win-controls">
+                <button class="win-btn win-min" onclick="minimizeWindow('settings-window')"></button>
+                <button class="win-btn win-close" onclick="closeWindow('settings-window')"></button>
+            </div>
         </div>
+
         <div class="win-content">
             <div class="settings-layout">
                 <div class="settings-sidebar">
-                    <div class="side-btn active" onclick="showSection('sys')" data-i18n="system">System</div>
-                    <div class="side-btn" onclick="showSection('pers')" data-i18n="personalization">Personalization</div>
-                    <div class="side-btn" onclick="showSection('acc')" data-i18n="account">Account</div>
-                    <div class="side-btn" onclick="showSection('sec')" data-i18n="security">Security</div>
-                    <div class="side-btn" onclick="showSection('storage')" data-i18n="storage">Storage</div>
-                    <div class="side-btn" onclick="showSection('upd')" data-i18n="updates">Updates</div>
-                    <div class="side-btn" onclick="showSection('lang')" data-i18n="language">Language</div>
+                    <button class="side-btn" onclick="openSettingsPage('general')">Ogólne</button>
+                    <button class="side-btn" onclick="openSettingsPage('appearance')">Wygląd</button>
+                    <button class="side-btn" onclick="openSettingsPage('system')">System</button>
+                    <button class="side-btn" onclick="openSettingsPage('about')">O systemie</button>
                 </div>
-                <div class="settings-main">
-                    <div id="sec-sys" class="settings-section">
-                        <h2 data-i18n="sys_info">System Information</h2>
-                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
-                            <p><b>OS:</b> BinaryOS New Generation</p>
-                            <p><b>Version:</b> 2.0.1 Premium</p>
-                            <p><b>Processor:</b> Tera Core AI v4</p>
-                        </div>
-                    </div>
-                    <div id="sec-pers" class="settings-section" style="display:none;">
-                        <h2 data-i18n="personalization">Personalization</h2>
-                        <p data-i18n="wallpaper">Wallpaper URL:</p>
-                        <input type="text" id="wall-url" class="ai-input" style="width: 100%;">
-                        <button class="side-btn" style="margin-top:10px; background: var(--primary);" onclick="document.body.style.background=`url(${document.getElementById('wall-url').value}) center/cover`" data-i18n="apply">Apply</button>
-                    </div>
-                    <div id="sec-acc" class="settings-section" style="display:none;">
-                        <h2 data-i18n="account">Account & Premium</h2>
-                        <p id="premium-tag" style="color: #e040fb; font-weight: bold;">Trial Member</p>
-                        <h3 data-i18n="tera_plans">Tera AI Premium Plans</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div style="background: rgba(156,39,176,0.1); padding: 10px; border-radius: 8px;">
-                                <b>Pro</b> (1k msg) - 100 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('Pro')">Buy</button>
-                            </div>
-                            <div style="background: rgba(156,39,176,0.2); padding: 10px; border-radius: 8px;">
-                                <b>Extra</b> (5k msg) - 700 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('Extra')">Buy</button>
-                            </div>
-                            <div style="background: rgba(156,39,176,0.3); padding: 10px; border-radius: 8px; grid-column: span 2;">
-                                <b>ExtraPlus</b> (Unlimited + 100TB) - 190 ZŁ<button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="buyPlan('ExtraPlus')">Buy</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="sec-sec" class="settings-section" style="display:none;">
-                        <h2 data-i18n="security">Security</h2>
-                        <button class="side-btn" style="background: var(--primary);" data-i18n="change_pass">Change Password</button>
-                    </div>
-                    <div id="sec-storage" class="settings-section" style="display:none;">
-                        <h2 data-i18n="storage">Storage Plans</h2>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">500 GB - 50 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">1 TB - 100 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">2 TB - 200 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">4 TB - 400 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
-                            <div style="background: rgba(156,39,176,0.2); padding: 10px; border-radius: 8px; grid-column: span 2;">30 TB - 3000 ZŁ <button class="side-btn" style="background: var(--primary-dark); margin-top: 5px;" onclick="alert('Bought!')">Buy</button></div>
-                        </div>
-                    </div>
-                    <div id="sec-upd" class="settings-section" style="display:none;">
-                        <h2 data-i18n="updates">Updates</h2>
-                        <p style="color: #27c93f;">✓ System is up to date.</p>
-                    </div>
-                    <div id="sec-lang" class="settings-section" style="display:none;">
-                        <h2 data-i18n="language">Language</h2>
-                        <select onchange="updateLang(this.value)" id="lang-select" style="width:100%; padding:10px; background:#222; color:white; border: 1px solid #444; border-radius: 5px;">
-                            <option value="en">English</option>
-                            <option value="pl">Polski</option>
-                        </select>
-                    </div>
+
+                <div class="settings-main" id="settings-main">
+                    <h2>Witaj w ustawieniach BinaryOS</h2>
+                    <p>Wybierz kategorię po lewej stronie.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Context Menu -->
-    <div id="context-menu">
-        <div class="cm-item" onclick="location.reload()">Refresh</div>
-        <div class="cm-item" onclick="openApp('settings')">Settings</div>
-        <div class="cm-item" onclick="createNew('folder')">New Folder</div>
-        <div class="cm-item" onclick="createNew('text')">New Text File</div>
+    <!-- About Window -->
+    <div id="about-window" class="window" style="width: 420px; height: 260px; top: 180px; left: 260px;">
+        <div class="win-header">
+            <span class="win-title">💻 O BinaryOS</span>
+            <div class="win-controls">
+                <button class="win-btn win-min" onclick="minimizeWindow('about-window')"></button>
+                <button class="win-btn win-close" onclick="closeWindow('about-window')"></button>
+            </div>
+        </div>
+        <div class="win-content">
+            <h2>BinaryOS</h2>
+            <p>Wersja: <b>1.0.0</b></p>
+            <p>Autor: franek</p>
+            <p>Silnik: HTML + CSS + JavaScript</p>
+            <p>Styl: fioletowy, szklany, premium desktop.</p>
+        </div>
     </div>
 
     <script>
-        // Core Variables
-        let activeWin = null, offX, offY;
-        let trialMsgs = 10;
-        const translations = {
-            en: { refresh: "Refresh", new: "New", settings: "Settings", tera: "Tera AI", system: "System", personalization: "Personalization", account: "Account", security: "Security", storage: "Storage", updates: "Updates", language: "Language", sys_info: "System Info", change_pass: "Change Password", wallpaper: "Wallpaper", apply: "Apply", tera_plans: "Tera AI Plans" },
-            pl: { refresh: "Odśwież", new: "Nowy", settings: "Ustawienia", tera: "Tera AI", system: "System", personalization: "Personalizacja", account: "Konto", security: "Bezpieczeństwo", storage: "Pamięć", updates: "Aktualizacje", language: "Język", sys_info: "Info o systemie", change_pass: "Zmień Hasło", wallpaper: "Tapeta", apply: "Zastosuj", tera_plans: "Plany Tera AI" }
-        };
-
-        // Window Management
-        function openApp(id) {
-            const win = document.getElementById('win-' + id);
-            if(win) {
-                win.style.display = 'flex';
-                // Bring to front
-                document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
-                win.style.zIndex = "1001";
-            }
-        }
-        function closeApp(id) { document.getElementById('win-' + id).style.display = 'none'; }
-        function toggleStart() { alert("BinaryOS - Start Menu"); }
-
-        // Window Dragging (Płynne i poprawione)
-        function dragWindow(e, id) {
-            activeWin = document.getElementById(id);
-            document.querySelectorAll('.window').forEach(w => w.style.zIndex = "1000");
-            activeWin.style.zIndex = "1001";
-            
-            offX = e.clientX - activeWin.offsetLeft;
-            offY = e.clientY - activeWin.offsetTop;
-            
-            function onMouseMove(me) {
-                if (!activeWin) return;
-                activeWin.style.left = (me.clientX - offX) + 'px';
-                activeWin.style.top = (me.clientY - offY) + 'px';
-            }
-            
-            function onMouseUp() {
-                activeWin = null;
-                window.removeEventListener('mousemove', onMouseMove);
-                window.removeEventListener('mouseup', onMouseUp);
-            }
-            
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-        }
-
-        // Lock Screen Logic
-        function updateTime() {
+        // CLOCK
+        function updateClock() {
             const now = new Date();
-            document.getElementById('ls-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const mo = String(now.getMonth() + 1).padStart(2, '0');
+            const y = now.getFullYear();
+
+            const days = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
+            const months = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+
+            document.getElementById('tb-time').textContent = `${h}:${m}`;
+            document.getElementById('tb-date').textContent = `${d}.${mo}.${y}`;
+
+            document.getElementById('ls-time').textContent = `${h}:${m}`;
+            document.getElementById('ls-date').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
         }
-        setInterval(updateTime, 1000); updateTime();
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        const ls = document.getElementById('lockscreen');
-        const lsLogin = document.getElementById('ls-login');
-        const lsHint = document.getElementById('ls-hint');
-        
-        ls.onclick = (e) => {
-            if(e.target === ls || e.target === lsHint) {
-                const savedPass = localStorage.getItem('pc_password');
-                if (savedPass && savedPass !== "") {
-                    lsLogin.style.display = 'flex';
-                    lsHint.style.display = 'none';
-                } else {
-                    unlock();
-                }
-            }
-        };
+        // LOCKSCREEN
+        const lockscreen = document.getElementById('lockscreen');
+        lockscreen.addEventListener('click', () => {
+            lockscreen.style.transform = 'translateY(-100%)';
+            setTimeout(() => { lockscreen.style.display = 'none'; }, 800);
+        });
 
-        function unlock() {
-            const savedPass = localStorage.getItem('pc_password');
-            const inputPass = document.getElementById('ls-pass-input').value;
-            if (!savedPass || savedPass === "" || inputPass === savedPass) {
-                ls.style.transform = 'translateY(-100%)';
-                setTimeout(() => ls.style.display = 'none', 800);
+        // START MENU
+        const startMenu = document.getElementById('start-menu');
+        function toggleStartMenu() {
+            if (startMenu.style.display === 'flex') {
+                startMenu.style.display = 'none';
             } else {
-                alert("Incorrect password!");
+                startMenu.style.display = 'flex';
             }
         }
+        function hideStartMenu() {
+            startMenu.style.display = 'none';
+        }
+        document.addEventListener('click', (e) => {
+            if (!startMenu.contains(e.target) && !e.target.closest('.tb-icon')) {
+                startMenu.style.display = 'none';
+            }
+        });
 
-        // Settings Logic
-        function showSection(id) {
-            document.querySelectorAll('.settings-section').forEach(s => s.style.display = 'none');
-            document.getElementById('sec-' + id).style.display = 'block';
-            document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+        // WINDOWS SYSTEM
+        let topZ = 1000;
+
+        function bringToFront(winEl) {
+            topZ++;
+            winEl.style.zIndex = topZ;
         }
 
-        function updateLang(lang) {
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if (translations[lang][key]) el.innerText = translations[lang][key];
+        function openWindow(id) {
+            const win = document.getElementById(id);
+            if (!win) return;
+            win.style.display = 'flex';
+            bringToFront(win);
+        }
+
+        function closeWindow(id) {
+            const win = document.getElementById(id);
+            if (!win) return;
+            win.style.display = 'none';
+        }
+
+        function minimizeWindow(id) {
+            const win = document.getElementById(id);
+            if (!win) return;
+            win.style.display = 'none';
+        }
+
+        // Dragging windows
+        document.querySelectorAll('.win-header').forEach(header => {
+            let win = header.parentElement;
+            let offsetX = 0, offsetY = 0, dragging = false;
+
+            header.addEventListener('mousedown', e => {
+                dragging = true;
+                bringToFront(win);
+                offsetX = e.clientX - win.offsetLeft;
+                offsetY = e.clientY - win.offsetTop;
             });
-            localStorage.setItem('binary_lang', lang);
-        }
 
-        function buyPlan(plan) {
-            alert("Purchased " + plan + "!");
-            document.getElementById('premium-tag').innerText = plan + " Member";
-            if(plan === 'ExtraPlus') {
-                trialMsgs = 999999;
-                document.getElementById('trial-info').innerText = "Unlimited Messages (ExtraPlus)";
+            document.addEventListener('mousemove', e => {
+                if (dragging) {
+                    win.style.left = (e.clientX - offsetX) + "px";
+                    win.style.top = (e.clientY - offsetY) + "px";
+                }
+            });
+
+            document.addEventListener('mouseup', () => dragging = false);
+
+            win.addEventListener('mousedown', () => bringToFront(win));
+        });
+
+        // SETTINGS PAGES
+        function openSettingsPage(page) {
+            const main = document.getElementById("settings-main");
+
+            if (page === "general") {
+                main.innerHTML = `
+                    <h2>Ogólne</h2>
+                    <p>Podstawowe ustawienia BinaryOS.</p>
+                    <label>Język systemu:</label>
+                    <select>
+                        <option>Polski</option>
+                        <option>English</option>
+                    </select>
+                `;
+            }
+
+            if (page === "appearance") {
+                main.innerHTML = `
+                    <h2>Wygląd</h2>
+                    <p>Zmień motyw, kolory i styl.</p>
+                    <button onclick="changeTheme()">Przełącz motyw</button>
+                `;
+            }
+
+            if (page === "system") {
+                main.innerHTML = `
+                    <h2>System</h2>
+                    <p>Ustawienia systemowe i wydajnościowe.</p>
+                    <button onclick="alert('Pamięć podręczna wyczyszczona (na niby)')">Wyczyść pamięć podręczną</button>
+                `;
+            }
+
+            if (page === "about") {
+                main.innerHTML = `
+                    <h2>O BinaryOS</h2>
+                    <p>Wersja: <b>1.0.0</b></p>
+                    <p>Autor: franek</p>
+                    <p>Silnik: HTML + CSS + JS</p>
+                    <p>To tylko początek. BinaryOS można rozbudowywać o kolejne aplikacje.</p>
+                `;
             }
         }
 
-        // Tera AI Logic
-        function sendTeraMsg() {
-            const input = document.getElementById('ai-input');
-            const msg = input.value.trim();
-            if (!msg || trialMsgs <= 0) return;
-            addMsg(msg, 'user');
-            input.value = '';
-            trialMsgs--;
-            document.getElementById('trial-info').innerText = `Trial: ${trialMsgs} messages left`;
-            setTimeout(() => addMsg("Hey! I'm Tera AI. How can I help you?", 'bot'), 1000);
-        }
-
-        function addMsg(text, type) {
-            const box = document.getElementById('ai-messages');
-            const m = document.createElement('div');
-            m.className = `msg ${type}`;
-            m.innerText = text;
-            box.appendChild(m);
-            box.scrollTop = box.scrollHeight;
-        }
-
-        // Desktop Utilities
-        function openContextMenu(e) {
-            e.preventDefault();
-            const cm = document.getElementById('context-menu');
-            cm.style.display = 'flex'; cm.style.left = e.pageX + 'px'; cm.style.top = e.pageY + 'px';
-        }
-        window.onclick = () => document.getElementById('context-menu').style.display = 'none';
-
-        let isSelecting = false, startX, startY;
-        function startSelection(e) {
-            if (e.target !== document.getElementById('desktop')) return;
-            isSelecting = true; startX = e.pageX; startY = e.pageY;
-            const box = document.getElementById('selection-box');
-            box.style.display = 'block'; box.style.left = startX+'px'; box.style.top = startY+'px';
-            box.style.width = '0'; box.style.height = '0';
-        }
-        window.onmousemove = (e) => {
-            if (!isSelecting) return;
-            const box = document.getElementById('selection-box');
-            box.style.width = Math.abs(e.pageX - startX) + 'px';
-            box.style.height = Math.abs(e.pageY - startY) + 'px';
-            box.style.left = Math.min(e.pageX, startX) + 'px';
-            box.style.top = Math.min(e.pageY, startY) + 'px';
-        };
-        window.onmouseup = () => { isSelecting = false; document.getElementById('selection-box').style.display = 'none'; };
-
-        function createNew(type) {
-            const icon = document.createElement('div');
-            icon.className = 'icon'; icon.style.top = '250px'; icon.style.left = '30px';
-            icon.innerHTML = `<div class="icon-img">${type==='folder'?'📂':'📄'}</div><div class="icon-text">New ${type}</div>`;
-            document.getElementById('desktop').appendChild(icon);
-        }
-
-        // Initial Load
-        window.onload = () => {
-            // Intro Animation
-            const cur = document.getElementById('fake-cursor');
-            cur.style.display = 'block'; cur.style.left = '50%'; cur.style.top = '100%';
-            setTimeout(() => {
-                cur.style.transition = 'all 1.5s ease-in-out';
-                cur.style.left = '150px'; cur.style.top = '50px';
-                setTimeout(() => {
-                    openApp('tera'); cur.style.display = 'none';
-                    setTimeout(() => { addMsg("Hello", 'user'); setTimeout(() => addMsg("Hey", 'bot'), 1000); }, 1000);
-                }, 1600);
-            }, 500);
-
-            // Bubbles
-            const bc = document.getElementById('bubble-container');
-            for(let i=0; i<12; i++) {
-                const b = document.createElement('div'); b.className = 'bubble';
-                const size = Math.random()*200+100; b.style.width=size+'px'; b.style.height=size+'px';
-                b.style.left=Math.random()*100+'%'; b.style.top=Math.random()*100+'%';
-                b.style.animationDelay=Math.random()*5+'s'; bc.appendChild(b);
+        // Simple theme toggle (demo)
+        let darkTheme = true;
+        function changeTheme() {
+            darkTheme = !darkTheme;
+            if (darkTheme) {
+                document.body.style.background = 'linear-gradient(135deg, #2e004d 0%, #1a0033 100%)';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #004d40 0%, #00251a 100%)';
             }
-
-            // Language
-            updateLang(localStorage.getItem('binary_lang') || 'en');
-        };
+        }
     </script>
 </body>
 </html>
